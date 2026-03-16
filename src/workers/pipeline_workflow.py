@@ -12,6 +12,18 @@ async def discovery_activity(bead_id: str, title: str, description: str) -> dict
     return scope
 
 @activity.defn
+async def check_changes_activity(service_name: str, dir_path: str) -> dict:
+    """
+    Checks if a directory has changed compared to its last known state.
+    """
+    from src.utils.change_detector import ChangeDetector
+    # In a real system, we'd persist hashes in a DB (e.g. Postgres or Vikunja context)
+    # For MVP, we calculate the hash and return it for the workflow to decide
+    print(f"🔍 Checking changes for {service_name} at {dir_path}...")
+    current_hash = ChangeDetector.get_directory_hash(dir_path)
+    return {"service": service_name, "hash": current_hash}
+
+@activity.defn
 async def create_sre_bug_activity(error_details: str) -> str:
     """
     SRE FALLBACK: Automatically creates a bug bead in Vikunja when the pipeline fails.
@@ -46,9 +58,9 @@ async def deploy_activity(bead_id: str) -> str:
 @workflow.defn
 class MasterPipelineWorkflow:
     @workflow.run
-    async def run(self, bead_id: str, title: str, description: str) -> str:
+    async def run(self, bead_id: str, title: str, description: str, services: list) -> str:
         """
-        The Master SDLC Pipeline with global SRE error-handling fallback.
+        The Master SDLC Pipeline with global SRE error-handling fallback and Smart Conditional Deployments.
         """
         standard_retry = RetryPolicy(
             initial_interval=timedelta(seconds=1),
@@ -64,39 +76,61 @@ class MasterPipelineWorkflow:
                 retry_policy=standard_retry
             )
 
-            # Step 1: Build
-            await workflow.execute_activity(
-                build_activity,
-                bead_id,
-                start_to_close_timeout=timedelta(minutes=5),
-                retry_policy=standard_retry
-            )
+            deployment_results = []
 
-            # Step 2: Test
-            await workflow.execute_activity(
-                test_activity,
-                bead_id,
-                start_to_close_timeout=timedelta(minutes=5),
-                retry_policy=standard_retry
-            )
+            for service in services:
+                name = service['name']
+                path = service['path']
+                last_hash = service.get('last_hash')
 
-            # Step 3: Secure
-            await workflow.execute_activity(
-                secure_activity,
-                bead_id,
-                start_to_close_timeout=timedelta(minutes=5),
-                retry_policy=standard_retry
-            )
+                # Step 1: Check for Changes
+                change_data = await workflow.execute_activity(
+                    check_changes_activity,
+                    args=[name, path],
+                    start_to_close_timeout=timedelta(seconds=60),
+                    retry_policy=standard_retry
+                )
 
-            # Step 4: Deploy
-            await workflow.execute_activity(
-                deploy_activity,
-                bead_id,
-                start_to_close_timeout=timedelta(minutes=10),
-                retry_policy=standard_retry
-            )
+                if last_hash and change_data['hash'] == last_hash:
+                    print(f"⏩ Skipping {name}: No changes detected.")
+                    deployment_results.append(f"{name}: Skipped")
+                    continue
 
-            return "Pipeline Completed Successfully"
+                # Step 2: Build
+                await workflow.execute_activity(
+                    build_activity,
+                    name, # Use service name
+                    start_to_close_timeout=timedelta(minutes=10),
+                    retry_policy=standard_retry
+                )
+
+                # Step 3: Test
+                await workflow.execute_activity(
+                    test_activity,
+                    name,
+                    start_to_close_timeout=timedelta(minutes=5),
+                    retry_policy=standard_retry
+                )
+
+                # Step 4: Secure
+                await workflow.execute_activity(
+                    secure_activity,
+                    name,
+                    start_to_close_timeout=timedelta(minutes=5),
+                    retry_policy=standard_retry
+                )
+
+                # Step 5: Deploy
+                await workflow.execute_activity(
+                    deploy_activity,
+                    name,
+                    start_to_close_timeout=timedelta(minutes=15),
+                    retry_policy=standard_retry
+                )
+                
+                deployment_results.append(f"{name}: Deployed ({change_data['hash']})")
+
+            return f"Pipeline Finished: {', '.join(deployment_results)}"
 
         except Exception as e:
             # --- GLOBAL SRE FALLBACK ---
