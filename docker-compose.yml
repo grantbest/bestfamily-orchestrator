@@ -1,0 +1,24 @@
+services:
+  agent-orchestrator:
+    build:
+      context: ../../../
+      dockerfile: Homelab/apps/agent-orchestrator/Dockerfile.orchestrator
+    container_name: agent-orchestrator
+    restart: always
+    env_file: ../../shared-services/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TEMPORAL_ADDRESS=temporal:7233
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    volumes:
+      - /Users/grantbest/Documents/Active/Homelab:/app/Homelab
+      - /Users/grantbest/Documents/Active/BettingApp:/app/BettingApp
+      - /Users/grantbest/Documents/Active/Homelab/apps/agent-orchestrator:/app/apps/agent-orchestrator
+    networks:
+      - homelab_global
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  homelab_global:
+    external: true

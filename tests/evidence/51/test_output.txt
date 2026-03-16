@@ -1,0 +1,99 @@
+Completing activity as failed ({'activity_id': '2', 'activity_type': 'failing_test_activity', 'attempt': 1, 'namespace': 'default', 'task_queue': 'test-pipeline-queue', 'workflow_id': 'test-pipeline-run', 'workflow_run_id': '019cf7d5-a782-7c19-bf87-f4e04d57501e', 'workflow_type': 'MasterPipelineWorkflow'})
+Traceback (most recent call last):
+  File "/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/temporalio/worker/_activity.py", line 318, in _handle_start_activity_task
+    result = await self._execute_activity(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        start, running_activity, task_token, data_converter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/temporalio/worker/_activity.py", line 669, in _execute_activity
+    return await impl.execute_activity(input)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/temporalio/worker/_activity.py", line 864, in execute_activity
+    return await input.fn(*input.args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/grantbest/Documents/Active/apps/agent-orchestrator/tests/test_pipeline_fallback.py", line 19, in failing_test_activity
+    raise RuntimeError("Intentional Test Failure for SRE Fallback Verification")
+RuntimeError: Intentional Test Failure for SRE Fallback Verification
+Temporal CLI 1.6.1 (Server 1.30.1, UI 2.45.3)
+
+Temporal Server:  localhost:64416
+Temporal Metrics: http://localhost:64418/metrics
+Completing activity as failed ({'activity_id': '2', 'activity_type': 'failing_test_activity', 'attempt': 2, 'namespace': 'default', 'task_queue': 'test-pipeline-queue', 'workflow_id': 'test-pipeline-run', 'workflow_run_id': '019cf7d5-a782-7c19-bf87-f4e04d57501e', 'workflow_type': 'MasterPipelineWorkflow'})
+Traceback (most recent call last):
+  File "/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/temporalio/worker/_activity.py", line 318, in _handle_start_activity_task
+    result = await self._execute_activity(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        start, running_activity, task_token, data_converter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/temporalio/worker/_activity.py", line 669, in _execute_activity
+    return await impl.execute_activity(input)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/temporalio/worker/_activity.py", line 864, in execute_activity
+    return await input.fn(*input.args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/grantbest/Documents/Active/apps/agent-orchestrator/tests/test_pipeline_fallback.py", line 19, in failing_test_activity
+    raise RuntimeError("Intentional Test Failure for SRE Fallback Verification")
+RuntimeError: Intentional Test Failure for SRE Fallback Verification
+Completing activity as failed ({'activity_id': '2', 'activity_type': 'failing_test_activity', 'attempt': 3, 'namespace': 'default', 'task_queue': 'test-pipeline-queue', 'workflow_id': 'test-pipeline-run', 'workflow_run_id': '019cf7d5-a782-7c19-bf87-f4e04d57501e', 'workflow_type': 'MasterPipelineWorkflow'})
+Traceback (most recent call last):
+  File "/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/temporalio/worker/_activity.py", line 318, in _handle_start_activity_task
+    result = await self._execute_activity(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        start, running_activity, task_token, data_converter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/temporalio/worker/_activity.py", line 669, in _execute_activity
+    return await impl.execute_activity(input)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/temporalio/worker/_activity.py", line 864, in execute_activity
+    return await input.fn(*input.args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/grantbest/Documents/Active/apps/agent-orchestrator/tests/test_pipeline_fallback.py", line 19, in failing_test_activity
+    raise RuntimeError("Intentional Test Failure for SRE Fallback Verification")
+RuntimeError: Intentional Test Failure for SRE Fallback Verification
+E
+======================================================================
+ERROR: test_pipeline_sre_fallback (__main__.TestPipelineFallback.test_pipeline_sre_fallback)
+----------------------------------------------------------------------
+temporalio.exceptions.ApplicationError: RuntimeError: Intentional Test Failure for SRE Fallback Verification
+
+The above exception was the direct cause of the following exception:
+
+temporalio.exceptions.ActivityError: Activity task failed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/grantbest/Documents/Active/apps/agent-orchestrator/tests/test_pipeline_fallback.py", line 40, in test_pipeline_sre_fallback
+    await env.client.execute_workflow(
+    ...<4 lines>...
+    )
+  File "/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/temporalio/client.py", line 806, in execute_workflow
+    return await (
+           ^^^^^^^
+    ...<30 lines>...
+    ).result()
+    ^^^^^^^^^^
+  File "/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/temporalio/client.py", line 2988, in result
+    raise WorkflowFailureError(
+    ...<3 lines>...
+    )
+temporalio.client.WorkflowFailureError: Workflow execution failed
+
+----------------------------------------------------------------------
+Ran 1 test in 3.326s
+
+FAILED (errors=1)
+🛠 Building for bead test-bead-123...
+🚨 SRE FALLBACK TRIGGERED: Pipeline Failure on Bead test-bead-123: Activity task failed

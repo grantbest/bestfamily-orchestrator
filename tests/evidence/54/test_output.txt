@@ -1,0 +1,19 @@
+/Users/grantbest/Documents/Active/venv/lib/python3.14/site-packages/google/genai/types.py:43: DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
+  VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+Temporal CLI 1.6.1 (Server 1.30.1, UI 2.45.3)
+
+Temporal Server:  localhost:49250
+Temporal Metrics: http://localhost:49253/metrics
+Executing <Task pending name='Task-2' coro=<TestPipelineDiscovery.test_pipeline_with_discovery() running at /Users/grantbest/Documents/Active/apps/agent-orchestrator/tests/test_pipeline_discovery.py:37> wait_for=<Future pending cb=[<builtins.PyDoneCallback object at 0x1123e6c30>(), Task.task_wakeup()] created at /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:459> cb=[_run_until_complete_cb() at /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py:181] created at /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py:109> took 0.821 seconds
+.
+----------------------------------------------------------------------
+Ran 1 test in 1.360s
+
+OK
+🧠 Discovery for bead bead-54...
+🛠 Building for bead bead-54...
+🧪 Testing for bead bead-54...
+🛡 Securing for bead bead-54...
+🚀 Deploying for bead bead-54...
+
+✅ Meta-Testing Evidence: MasterPipelineWorkflow successfully integrated Discovery phase.

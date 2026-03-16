@@ -1,0 +1,31 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Agent Orchestrator dependencies
+RUN pip install --no-cache-dir \
+    temporalio \
+    ollama \
+    httpx \
+    fastapi \
+    uvicorn \
+    python-multipart \
+    google-genai \
+    google-generativeai \
+    pydantic
+
+# Context is the workspace root (/Users/grantbest/Documents/Active)
+COPY Homelab/apps/agent-orchestrator /app/apps/agent-orchestrator/
+COPY Homelab /app/Homelab
+COPY BettingApp /app/BettingApp
+
+# Set PYTHONPATH to include all components
+ENV PYTHONPATH="/app/apps/agent-orchestrator:/app/Homelab/scripts:/app/BettingApp/scripts"
+
+# Default command: Start the Unified Orchestrator
+CMD ["python", "-u", "/app/apps/agent-orchestrator/src/workers/unified_orchestrator.py"]
