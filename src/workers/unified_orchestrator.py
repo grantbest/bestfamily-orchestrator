@@ -87,6 +87,26 @@ async def main():
         activities=[sre_activity],
     )
 
+    # 4. Developer Queue Worker (Aider-driven)
+    from src.agents.developer import DeveloperAgent
+    @activity.defn
+    async def developer_activity(bead_id: str) -> str:
+        agent = DeveloperAgent(workspace_root="/app")
+        bead_data = read_bead(bead_id)
+        result = await agent.implement_feature(
+            bead_data.get("title", "No Title"),
+            bead_data.get("description", "No Instructions"),
+            [] # Aider will use repo map to find relevant files
+        )
+        update_bead(bead_id, {"resolution": result, "status": "resolved"})
+        return result
+
+    developer_worker = Worker(
+        client,
+        task_queue="betting-app-queue", # Mapping to the existing triage queue
+        activities=[developer_activity],
+    )
+
     print("🤖 UNIFIED BESTFAM ORCHESTRATOR STARTED")
     print(f"Connecting to Temporal at: {temporal_address}")
     
@@ -94,7 +114,8 @@ async def main():
     await asyncio.gather(
         orchestrator_worker.run(),
         architect_worker.run(),
-        sre_worker.run()
+        sre_worker.run(),
+        developer_worker.run()
     )
 
 if __name__ == "__main__":

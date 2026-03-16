@@ -5,6 +5,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Agent Orchestrator dependencies
@@ -17,7 +18,8 @@ RUN pip install --no-cache-dir \
     python-multipart \
     google-genai \
     google-generativeai \
-    pydantic
+    pydantic \
+    aider-chat
 
 # Context is the workspace root (/Users/grantbest/Documents/Active)
 COPY Homelab/apps/agent-orchestrator /app/apps/agent-orchestrator/
