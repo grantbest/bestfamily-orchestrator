@@ -142,6 +142,16 @@ def list_beads(status: str = None) -> List[Dict[str, Any]]:
         if status: beads = [b for b in beads if b["stage"] == status.upper()]
         return beads
 
+def delete_bead(bead_id: str):
+    """Deletes a task from Vikunja."""
+    url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}"
+    with httpx.Client() as client:
+        resp = client.delete(url, headers=get_headers())
+        if resp.status_code in [200, 204]:
+            print(f"✅ Deleted bead {bead_id}")
+        else:
+            print(f"❌ Failed to delete bead {bead_id}: {resp.text}")
+
 def add_comment(bead_id: str, comment_text: str):
     """Adds a comment with AGENT signature."""
     url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}/comments"
