@@ -298,6 +298,28 @@ async def breakdown_activity(bead_id: str) -> str:
 
 
 @activity.defn
+async def get_task_title_activity(bead_id: str) -> str:
+    """Fetches task title from Vikunja. Used in workflow code to avoid direct I/O."""
+    from beads_manager import read_bead
+    return read_bead(bead_id).get("title", "")
+
+
+@activity.defn
+async def move_task_activity(bead_id: str, bucket_name: str) -> str:
+    """Moves a Vikunja task to the named bucket. Safe to call from workflow via execute_activity."""
+    from beads_manager import move_to_bucket
+    move_to_bucket(bead_id, bucket_name)
+    return f"Moved {bead_id} to {bucket_name}"
+
+
+@activity.defn
+async def post_comment_activity(bead_id: str, message: str) -> None:
+    """Posts a comment on a Vikunja task. Safe to call from workflow via execute_activity."""
+    from beads_manager import add_comment
+    add_comment(bead_id, message)
+
+
+@activity.defn
 async def check_epic_completion_activity(bead_id: str) -> str:
     """
     After a story completes Validation, check if all sibling stories under the
@@ -377,18 +399,15 @@ class MayorWorkflow:
                 architect_design_activity, scope,
                 start_to_close_timeout=timedelta(minutes=15), retry_policy=retry)
 
-            # Read title/desc for game designer
-            from beads_manager import read_bead
-            bead_data = read_bead(bead_id)
-
+            # title/desc for game designer is read inside ba_design_activity scope dict
             game_questions = await workflow.execute_activity(
                 game_designer_activity,
-                args=[bead_data.get("title", ""), bead_data.get("description", "")],
+                args=[scope.get("title", ""), scope.get("product_analysis", "")],
                 start_to_close_timeout=timedelta(minutes=10), retry_policy=retry)
 
             infra_questions = await workflow.execute_activity(
                 domain_experts_activity,
-                args=[design, bead_data.get("title", "")],
+                args=[design, scope.get("title", "")],
                 start_to_close_timeout=timedelta(minutes=5), retry_policy=retry)
 
             return await workflow.execute_activity(
@@ -406,9 +425,9 @@ class MayorWorkflow:
 
         # ─── DOING: epic → breakdown; story → implement → hand off to Validation ─
         elif bucket == "Doing":
-            from beads_manager import read_bead, move_to_bucket
-            bead_data = read_bead(bead_id)
-            title = bead_data.get("title", "")
+            title = await workflow.execute_activity(
+                get_task_title_activity, bead_id,
+                start_to_close_timeout=timedelta(seconds=30), retry_policy=retry)
 
             if _is_story(title):
                 # Story moved to Doing → triage → implement → move to Validation
@@ -422,8 +441,10 @@ class MayorWorkflow:
                     start_to_close_timeout=timedelta(minutes=30),
                     task_queue=target_queue, retry_policy=fast_retry)
 
-                # Hand off to Validation — webhook will trigger RefineryWorkflow
-                move_to_bucket(bead_id, "Validation")
+                await workflow.execute_activity(
+                    move_task_activity, args=[bead_id, "Validation"],
+                    start_to_close_timeout=timedelta(seconds=30), retry_policy=retry)
+
                 return f"Doing complete — Dev: {dev_result} | Moved to Validation."
 
             else:
@@ -451,12 +472,16 @@ class MayorWorkflow:
 
                 # Fan-in: wait for all stories to complete
                 logger.info(f"[{bead_id}] Mayor: Waiting for {len(story_handles)} stories to complete.")
-                story_results = await asyncio.gather(*[h for h in story_handles], return_exceptions=True)
+                await asyncio.gather(*story_handles, return_exceptions=True)
 
                 # All stories done — move epic to Validation
-                from beads_manager import add_comment as _add_comment, move_to_bucket as _move_to_bucket
-                _add_comment(bead_id, f"🏆 **All {len(story_ids)} stories complete!** Moving Epic to Validation. [AGENT_SIGNATURE]")
-                _move_to_bucket(bead_id, "Validation")
+                await workflow.execute_activity(
+                    post_comment_activity,
+                    args=[bead_id, f"🏆 **All {len(story_ids)} stories complete!** Moving Epic to Validation. [AGENT_SIGNATURE]"],
+                    start_to_close_timeout=timedelta(seconds=30))
+                await workflow.execute_activity(
+                    move_task_activity, args=[bead_id, "Validation"],
+                    start_to_close_timeout=timedelta(seconds=30), retry_policy=retry)
                 return f"Epic complete — {len(story_ids)} stories done. Moved to Validation."
 
         # ─── VALIDATION: run Refinery gates → Done ────────────────────────────

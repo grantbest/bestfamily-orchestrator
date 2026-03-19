@@ -31,6 +31,9 @@ from src.workers.mayor_workflow import (
     quarterback_synthesis_activity,
     design_refine_activity,
     breakdown_activity,
+    get_task_title_activity,
+    move_task_activity,
+    post_comment_activity,
     check_epic_completion_activity,
 )
 
@@ -98,6 +101,9 @@ async def main():
             quarterback_synthesis_activity,
             design_refine_activity,
             breakdown_activity,
+            get_task_title_activity,
+            move_task_activity,
+            post_comment_activity,
             check_epic_completion_activity,
             # Pipeline
             discovery_activity,
