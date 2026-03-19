@@ -1,17 +1,15 @@
 import os
 import json
 from typing import Dict, Any, Optional
-from google import genai
+from src.utils.model_router import ModelRouter
 
 class ArchitectAgent:
     """
-    Refined Architect Agent for designing system architecture and refining beads.
-    Handles Gemini 2.0 with Ollama (Llama3) fallback.
+    Architect Agent for designing system architecture and refining beads.
+    Uses ModelRouter for resilient cross-provider support.
     """
     def __init__(self):
-        self.api_key = os.getenv("GEMINI_API_KEY")
-        # Use host.docker.internal inside container
-        self.ollama_host = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
+        self.router = ModelRouter()
         self.system_prompt = (
             "You are a Senior System Architect. You must respond ONLY with a valid JSON object. "
             "Maintain a SINGLE SOURCE OF TRUTH design document."
@@ -29,39 +27,23 @@ class ArchitectAgent:
         INSTRUCTIONS:
         1. Rewrite the TASK DESCRIPTION into a professional Markdown design doc.
         2. Use headers: # [Title], ## Business Requirements, ## Recommended Solution Design, ## Acceptance Criteria.
-        3. End with '[AGENT_SIGNATURE]'.
+        3. Use bullet points for all lists and sub-tasks.
+        4. Use bold text for key technical components.
+        5. Ensure double newlines between sections for readability.
+        6. End with '[AGENT_SIGNATURE]'.
         
         REQUIRED JSON KEYS:
-        - "updated_description": "The full markdown string"
+        - "updated_description": "The full structured markdown string"
         - "follow_up": "Next steps"
         - "needs_more_info": false
         """
 
-        # 1. Try Gemini
-        if self.api_key:
-            try:
-                client = genai.Client(api_key=self.api_key)
-                response = client.models.generate_content(
-                    model="gemini-2.0-flash-lite",
-                    contents=prompt,
-                    config={'response_mime_type': 'application/json'}
-                )
-                return json.loads(response.text)
-            except Exception as e:
-                print(f"ArchitectAgent: Gemini failed: {e}")
-
-        # 2. Fallback to Ollama
         try:
-            import ollama
-            o_client = ollama.Client(host=self.ollama_host)
-            response = o_client.chat(
-                model="llama3:latest",
-                messages=[
-                    {'role': 'system', 'content': self.system_prompt},
-                    {'role': 'user', 'content': prompt}
-                ],
-                format='json'
+            return await self.router.chat(
+                prompt=prompt,
+                system_prompt=self.system_prompt,
+                preferred_model="complex",
+                json_mode=True
             )
-            return json.loads(response['message']['content'])
         except Exception as e:
-            raise RuntimeError(f"ArchitectAgent: Both Gemini and Ollama failed: {e}")
+            raise RuntimeError(f"ArchitectAgent: Failed to generate design: {e}")

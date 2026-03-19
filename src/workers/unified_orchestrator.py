@@ -7,22 +7,51 @@ from temporalio import activity
 
 # Workflows
 from src.workers.pipeline_workflow import MasterPipelineWorkflow
-from src.workers.triage_workflow import TriageWorkflow
+from src.workers.mayor_workflow import MayorWorkflow
+from src.workers.refinery_workflow import RefineryWorkflow
 
-# Activities
+# Pipeline activities
 from src.workers.pipeline_workflow import (
     discovery_activity,
+    check_changes_activity,
     build_activity,
     test_activity,
     secure_activity,
     deploy_activity,
     create_sre_bug_activity
 )
-from src.workers.triage_workflow import triage_task_queue
+
+# Mayor activities
+from src.workers.mayor_workflow import (
+    triage_task_queue,
+    ba_design_activity,
+    architect_design_activity,
+    game_designer_activity,
+    domain_experts_activity,
+    quarterback_synthesis_activity,
+    design_refine_activity,
+    breakdown_activity,
+    check_epic_completion_activity,
+)
+
+# Refinery activities
+from src.workers.refinery_workflow import (
+    refine_and_merge_activity,
+    lint_and_format_activity,
+    integration_test_activity,
+    rollback_merge_activity,
+    cleanup_refinery_activity,
+    create_gate_failure_bug_activity,
+    broadcast_status_activity,
+)
+
+# Polecat developer activity
+from src.workers.polecat_activities import polecat_developer_activity
+
 
 async def main():
     logging.basicConfig(level=logging.INFO)
-    
+
     temporal_address = os.getenv("TEMPORAL_ADDRESS", "localhost:7233")
     client = await Client.connect(temporal_address)
 
@@ -36,8 +65,8 @@ async def main():
         agent = ArchitectAgent()
         bead_data = read_bead(bead_id)
         result = await agent.analyze(
-            bead_data.get("title", ""), 
-            bead_data.get("description", ""), 
+            bead_data.get("title", ""),
+            bead_data.get("description", ""),
             "Migrated to Unified Orchestrator"
         )
         update_bead(bead_id, {
@@ -54,21 +83,41 @@ async def main():
         update_bead(bead_id, {"resolution": diagnosis.get("diagnosis"), "status": "resolved"})
         return "SRE execution success"
 
-    # 1. Main Orchestrator Worker (Triage + SDLC Pipeline)
+    # 1. Main Orchestrator Worker (Mayor + SDLC Pipeline + Refinery)
     orchestrator_worker = Worker(
         client,
         task_queue="main-orchestrator-queue",
-        workflows=[TriageWorkflow, MasterPipelineWorkflow],
+        workflows=[MayorWorkflow, MasterPipelineWorkflow, RefineryWorkflow],
         activities=[
+            # Mayor
             triage_task_queue,
+            ba_design_activity,
+            architect_design_activity,
+            game_designer_activity,
+            domain_experts_activity,
+            quarterback_synthesis_activity,
+            design_refine_activity,
+            breakdown_activity,
+            check_epic_completion_activity,
+            # Pipeline
             discovery_activity,
+            check_changes_activity,
             build_activity,
             test_activity,
             secure_activity,
             deploy_activity,
             create_sre_bug_activity,
-            architect_activity, # Shared
-            sre_activity        # Shared
+            # Refinery
+            refine_and_merge_activity,
+            lint_and_format_activity,
+            integration_test_activity,
+            rollback_merge_activity,
+            cleanup_refinery_activity,
+            create_gate_failure_bug_activity,
+            broadcast_status_activity,
+            # Shared agents
+            architect_activity,
+            sre_activity,
         ],
         workflow_runner=UnsandboxedWorkflowRunner()
     )
@@ -84,39 +133,35 @@ async def main():
     sre_worker = Worker(
         client,
         task_queue="sre-queue",
-        activities=[sre_activity],
+        activities=[sre_activity, polecat_developer_activity],
     )
 
-    # 4. Developer Queue Worker (Aider-driven)
-    from src.agents.developer import DeveloperAgent
-    @activity.defn
-    async def developer_activity(bead_id: str) -> str:
-        agent = DeveloperAgent(workspace_root="/app")
-        bead_data = read_bead(bead_id)
-        result = await agent.implement_feature(
-            bead_data.get("title", "No Title"),
-            bead_data.get("description", "No Instructions"),
-            [] # Aider will use repo map to find relevant files
-        )
-        update_bead(bead_id, {"resolution": result, "status": "resolved"})
-        return result
-
+    # 4. Betting App Polecat Developer Queue
     developer_worker = Worker(
         client,
-        task_queue="betting-app-queue", # Mapping to the existing triage queue
-        activities=[developer_activity],
+        task_queue="betting-app-queue",
+        activities=[polecat_developer_activity],
     )
 
-    print("🤖 UNIFIED BESTFAM ORCHESTRATOR STARTED")
+    # 5. Homelab Polecat Developer Queue
+    homelab_worker = Worker(
+        client,
+        task_queue="homelab-queue",
+        activities=[polecat_developer_activity],
+    )
+
+    print("🤖 UNIFIED BESTFAM ORCHESTRATOR (GASTOWN MODE) STARTED")
     print(f"Connecting to Temporal at: {temporal_address}")
-    
+
     # Run all workers concurrently
     await asyncio.gather(
         orchestrator_worker.run(),
         architect_worker.run(),
         sre_worker.run(),
-        developer_worker.run()
+        developer_worker.run(),
+        homelab_worker.run(),
     )
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -19,15 +19,17 @@ RUN pip install --no-cache-dir \
     google-genai \
     google-generativeai \
     pydantic \
-    aider-chat
+    aider-chat \
+    openai \
+    anthropic
 
-# Context is the workspace root (/Users/grantbest/Documents/Active)
-COPY Homelab/apps/agent-orchestrator /app/apps/agent-orchestrator/
+# Context is root of the workspace
+COPY BestFam-Orchestrator /app/BestFam-Orchestrator/
 COPY Homelab /app/Homelab
 COPY BettingApp /app/BettingApp
 
 # Set PYTHONPATH to include all components
-ENV PYTHONPATH="/app/apps/agent-orchestrator:/app/Homelab/scripts:/app/BettingApp/scripts"
+ENV PYTHONPATH="/app/BestFam-Orchestrator:/app/BestFam-Orchestrator/src:/app/Homelab/scripts:/app/BettingApp/scripts"
 
 # Default command: Start the Unified Orchestrator
-CMD ["python", "-u", "/app/apps/agent-orchestrator/src/workers/unified_orchestrator.py"]
+CMD ["python", "-u", "BestFam-Orchestrator/src/workers/unified_orchestrator.py"]

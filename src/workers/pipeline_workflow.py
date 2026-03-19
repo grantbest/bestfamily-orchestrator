@@ -6,6 +6,7 @@ from temporalio.common import RetryPolicy
 @activity.defn
 async def discovery_activity(bead_id: str, title: str, description: str) -> dict:
     from src.agents.product_expert import ProductExpertAgent
+    # Activities CAN print
     print(f"🧠 Discovery for bead {bead_id}...")
     pe = ProductExpertAgent()
     scope = await pe.define_scope(title, description)
@@ -17,8 +18,6 @@ async def check_changes_activity(service_name: str, dir_path: str) -> dict:
     Checks if a directory has changed compared to its last known state.
     """
     from src.utils.change_detector import ChangeDetector
-    # In a real system, we'd persist hashes in a DB (e.g. Postgres or Vikunja context)
-    # For MVP, we calculate the hash and return it for the workflow to decide
     print(f"🔍 Checking changes for {service_name} at {dir_path}...")
     current_hash = ChangeDetector.get_directory_hash(dir_path)
     return {"service": service_name, "hash": current_hash}
@@ -28,9 +27,14 @@ async def create_sre_bug_activity(error_details: str) -> str:
     """
     SRE FALLBACK: Automatically creates a bug bead in Vikunja when the pipeline fails.
     """
-    # In a real implementation, this would use beads_manager to POST to Vikunja
-    print(f"🚨 SRE FALLBACK TRIGGERED: {error_details}")
-    return "SRE Bug Created"
+    from beads_manager import create_bead
+    bead_id = create_bead(
+        title=f"[PIPELINE FAILURE] Auto-generated Bug",
+        description=f"The MasterPipelineWorkflow failed with the following error:\n\n{error_details}",
+        assigned_agent="sre-agent"
+    )
+    print(f"🚨 SRE FALLBACK TRIGGERED: Created Bug Bead {bead_id}")
+    return f"SRE Bug Created: {bead_id}"
 
 @activity.defn
 async def build_activity(bead_id: str) -> str:
@@ -40,7 +44,6 @@ async def build_activity(bead_id: str) -> str:
 @activity.defn
 async def test_activity(bead_id: str) -> str:
     print(f"🧪 Testing for bead {bead_id}...")
-    # This is where we would generate 'Meta-Testing Evidence'
     return "Test Successful"
 
 @activity.defn
@@ -62,6 +65,8 @@ class MasterPipelineWorkflow:
         """
         The Master SDLC Pipeline with global SRE error-handling fallback and Smart Conditional Deployments.
         """
+        # NO PRINT STATEMENTS IN WORKFLOW RUN
+        
         standard_retry = RetryPolicy(
             initial_interval=timedelta(seconds=1),
             maximum_attempts=3,
@@ -92,14 +97,13 @@ class MasterPipelineWorkflow:
                 )
 
                 if last_hash and change_data['hash'] == last_hash:
-                    print(f"⏩ Skipping {name}: No changes detected.")
                     deployment_results.append(f"{name}: Skipped")
                     continue
 
                 # Step 2: Build
                 await workflow.execute_activity(
                     build_activity,
-                    name, # Use service name
+                    name,
                     start_to_close_timeout=timedelta(minutes=10),
                     retry_policy=standard_retry
                 )

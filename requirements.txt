@@ -1,12 +1,13 @@
-temporalio
+google-genai
+google-generativeai
 ollama
 httpx
 fastapi
 uvicorn
 python-multipart
-google-genai
-google-generativeai
 pydantic
 pytest
 pytest-asyncio
 python-dotenv
+openai
+anthropic

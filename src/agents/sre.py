@@ -1,15 +1,15 @@
 import os
 import json
 from typing import Dict, Any, Optional
-from google import genai
+from src.utils.model_router import ModelRouter
 
 class SREAgent:
     """
     SRE Agent for investigating failures, analyzing logs, and proposing/applying infra fixes.
+    Uses ModelRouter for resilient cross-provider support.
     """
     def __init__(self):
-        self.api_key = os.getenv("GEMINI_API_KEY")
-        self.ollama_host = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
+        self.router = ModelRouter()
 
     async def diagnose(self, title: str, description: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
@@ -35,33 +35,17 @@ class SREAgent:
         }}
         """
 
-        # 1. Try Gemini
-        if self.api_key:
-            try:
-                client = genai.Client(api_key=self.api_key)
-                response = client.models.generate_content(
-                    model="gemini-2.0-flash-lite",
-                    contents=prompt,
-                    config={'response_mime_type': 'application/json'}
-                )
-                return json.loads(response.text)
-            except Exception as e:
-                print(f"SREAgent: Gemini failed: {e}")
-
-        # 2. Fallback to Ollama
         try:
-            import ollama
-            o_client = ollama.Client(host=self.ollama_host)
-            response = o_client.chat(
-                model="llama3:latest",
-                messages=[{'role': 'user', 'content': prompt}],
-                format='json'
+            return await self.router.chat(
+                prompt=prompt,
+                system_prompt="You are a Senior SRE.",
+                preferred_model="auto",
+                json_mode=True
             )
-            return json.loads(response['message']['content'])
         except Exception as e:
             # SRE should be able to operate even with simple rules if AI fails
             return {
-                "diagnosis": "AI Diagnosis Unavailable",
+                "diagnosis": f"AI Diagnosis Unavailable: {e}",
                 "proposed_fix": "Perform manual investigation of logs and infrastructure.",
                 "action_commands": [],
                 "confidence": 0.0
