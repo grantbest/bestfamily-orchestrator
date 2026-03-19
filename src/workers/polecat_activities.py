@@ -90,7 +90,7 @@ async def polecat_developer_activity(bead_id: str) -> str:
         
         # Patch the agent's environment or pass it in
         agent = DeveloperAgent(workspace_root=worktree_path)
-        result = await agent.implement_feature(task_title, instruction, [])
+        result = await agent.implement_feature(task_title, instruction, [], bead_id=bead_id)
         
         # 4. Push Changes (to simulate external refinery integration)
         # Note: In local dev without a remote, this might be skipped or mocked.

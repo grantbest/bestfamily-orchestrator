@@ -11,6 +11,33 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 @activity.defn
+async def check_evidence_activity(bead_id: str) -> str:
+    """
+    GASTOWN REFINERY GATE: Verifies that the Polecat provided test evidence.
+    """
+    from beads_manager import read_bead, add_comment
+    bead_data = read_bead(bead_id)
+    worktree_path = bead_data.get("context", {}).get("worktree")
+
+    if not worktree_path:
+        return "FAILED: No worktree context found."
+
+    evidence_path = os.path.join(worktree_path, "tests", "evidence", bead_id, "pytest_output.txt")
+    
+    if not os.path.exists(evidence_path):
+        logger.error(f"❌ Refinery: Evidence MISSING for Bead {bead_id} at {evidence_path}")
+        add_comment(bead_id, "🚨 **Evidence Gate Failed:** I cannot find the `pytest_output.txt` in the evidence directory. The Polecat may have failed to run tests.")
+        return "FAILED: Evidence file missing."
+
+    # Check if file is non-empty
+    if os.path.getsize(evidence_path) < 10:
+        logger.error(f"❌ Refinery: Evidence EMPTY for Bead {bead_id}")
+        return "FAILED: Evidence file is empty."
+
+    logger.info(f"✅ Refinery: Evidence Gate passed for Bead {bead_id}")
+    return "SUCCESS: Evidence verified."
+
+@activity.defn
 async def lint_and_format_activity(bead_id: str) -> str:
     """
     GASTOWN REFINERY GATE: Runs Ruff to lint and format the Polecat's code.
@@ -215,6 +242,28 @@ class RefineryWorkflow:
             start_to_close_timeout=timedelta(seconds=30)
         )
         
+        # 0. EVIDENCE GATE
+        await workflow.execute_activity(
+            broadcast_status_activity,
+            args=[bead_id, "Running Evidence Gate..."],
+            start_to_close_timeout=timedelta(seconds=30)
+        )
+        evidence_result = await workflow.execute_activity(
+            check_evidence_activity,
+            bead_id,
+            start_to_close_timeout=timedelta(minutes=2),
+            retry_policy=retry
+        )
+        
+        if evidence_result.startswith("FAILED"):
+            await workflow.execute_activity(
+                broadcast_status_activity, 
+                args=[bead_id, "Evidence Gate Failed. Rejecting work.", "ERROR"],
+                start_to_close_timeout=timedelta(seconds=30)
+            )
+            await workflow.execute_activity(cleanup_refinery_activity, args=[bead_id, False], start_to_close_timeout=timedelta(minutes=5))
+            return evidence_result
+
         # 1. QUALITY GATE
         await workflow.execute_activity(
             broadcast_status_activity,

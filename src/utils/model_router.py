@@ -7,13 +7,12 @@ from typing import Dict, Any, List, Optional
 class ModelRouter:
     """
     Central utility to route LLM requests across multiple providers.
-    Supports Gemini, DeepSeek (via OpenAI SDK), Claude, and Ollama.
+    Supports Gemini, OpenAI, Claude, and Ollama.
     """
     def __init__(self):
         self.gemini_key = os.getenv("GEMINI_API_KEY")
         self.anthropic_key = os.getenv("ANTHROPIC_API_KEY")
         self.openai_key = os.getenv("OPENAI_API_KEY")
-        self.deepseek_key = os.getenv("DEEPSEEK_API_KEY")
         self.ollama_host = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
 
     async def chat(self,
@@ -23,25 +22,23 @@ class ModelRouter:
                    json_mode: bool = True) -> Dict[str, Any]:
         """
         Executes a chat request with automatic fallback logic.
-        Prioritizes Claude and Gemini for complex work.
-        Always falls back to Ollama if all premium providers fail.
+        Priority: OpenAI (gpt-4o) -> Gemini (2.0-flash) -> Ollama (Local).
+        Using OpenAI first because Gemini Free Tier has been unstable with SSL handshakes.
         """
         model_priority = []
 
         if preferred_model == "complex":
-            # GASTOWN PREFERENCE: Claude -> Gemini -> GPT-4
-            if self.anthropic_key: model_priority.append(("anthropic", "claude-3-5-sonnet-20241022"))
-            if self.gemini_key: model_priority.append(("gemini", "gemini-2.0-flash-lite"))
             if self.openai_key: model_priority.append(("openai", "gpt-4o"))
+            if self.gemini_key: model_priority.append(("gemini", "gemini-2.0-flash"))
         elif preferred_model == "fast":
-            if self.gemini_key: model_priority.append(("gemini", "gemini-1.5-flash"))
             if self.openai_key: model_priority.append(("openai", "gpt-4o-mini"))
-        else:
+            if self.gemini_key: model_priority.append(("gemini", "gemini-2.0-flash"))
+        elif preferred_model == "claude":
             if self.anthropic_key: model_priority.append(("anthropic", "claude-3-5-sonnet-20241022"))
-            if self.gemini_key: model_priority.append(("gemini", "gemini-1.5-flash"))
+        else:
             if self.openai_key: model_priority.append(("openai", "gpt-4o"))
+            if self.gemini_key: model_priority.append(("gemini", "gemini-2.0-flash"))
 
-        # Always append Ollama as final fallback
         model_priority.append(("ollama", "llama3:latest"))
 
         for provider, model in model_priority:
@@ -49,8 +46,6 @@ class ModelRouter:
                 logging.info(f"ModelRouter: Trying {provider}/{model}")
                 if provider == "gemini":
                     return await self._call_gemini(prompt, system_prompt, model, json_mode)
-                elif provider == "deepseek":
-                    return await self._call_openai_compatible(prompt, system_prompt, model, "https://api.deepseek.com", self.deepseek_key, json_mode)
                 elif provider == "openai":
                     return await self._call_openai_compatible(prompt, system_prompt, model, "https://api.openai.com/v1", self.openai_key, json_mode)
                 elif provider == "anthropic":

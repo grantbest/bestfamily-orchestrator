@@ -289,12 +289,9 @@ async def breakdown_activity(bead_id: str) -> str:
         child_id = create_bead(
             title=f"[STORY] {story['title']}",
             description=story['description'],
-            requesting_agent="quarterback-breakdown"
+            requesting_agent="quarterback-breakdown",
+            parent_id=bead_id
         )
-        # NOTE: Do NOT call link_beads here — it fires task.updated on the epic,
-        # which re-triggers the coordinator if the previous run just completed.
-        # Do NOT call move_to_bucket here — the fan-out workflow does it AFTER
-        # starting child workflows so the webhook sees them as already running.
         created_ids.append(child_id)
 
     add_comment(bead_id, f"✅ **Epic Breakdown Complete!** Created {len(stories)} stories. Starting parallel implementation. [AGENT_SIGNATURE]")
@@ -333,9 +330,9 @@ async def clear_breakdown_marker_activity(bead_id: str) -> None:
 
 @activity.defn
 async def move_task_activity(bead_id: str, bucket_name: str) -> str:
-    """Moves a Vikunja task to the named bucket. Safe to call from workflow via execute_activity."""
-    from beads_manager import move_to_bucket
-    move_to_bucket(bead_id, bucket_name)
+    """Moves a Vikunja task and updates metadata stage."""
+    from beads_manager import update_bead
+    update_bead(bead_id, {"stage": bucket_name.upper()})
     return f"Moved {bead_id} to {bucket_name}"
 
 
@@ -455,9 +452,10 @@ class MayorWorkflow:
             title = await workflow.execute_activity(
                 get_task_title_activity, bead_id,
                 start_to_close_timeout=timedelta(seconds=30), retry_policy=retry)
+            
+            logger.info(f"[{bead_id}] Mayor Doing: title='{title}'")
 
             if _is_story(title):
-                # Story moved to Doing → triage → implement → move to Validation
                 logger.info(f"[{bead_id}] Mayor: Story detected — routing to Polecat.")
                 target_queue = await workflow.execute_activity(
                     triage_task_queue, bead_id,

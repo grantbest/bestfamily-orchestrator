@@ -1,259 +1,186 @@
 import os
 import json
-import uuid
 import httpx
-from datetime import datetime
-from pathlib import Path
+import logging
+from datetime import datetime, timezone
+from typing import List, Optional, Dict, Any
+
+VERSION = "1.5.1-RESTORED-FUNCTIONS"
 
 # Configuration from Environment
 VIKUNJA_BASE_URL = os.getenv("VIKUNJA_BASE_URL", "https://tracker.bestfam.us/api/v1")
 VIKUNJA_API_TOKEN = os.getenv("VIKUNJA_API_TOKEN")
 VIKUNJA_PROJECT_ID = os.getenv("VIKUNJA_PROJECT_ID", "2")
+VIKUNJA_KANBAN_VIEW_ID = os.getenv("VIKUNJA_KANBAN_VIEW_ID", "8")
+
+# Confirmed Bucket IDs for Project 2 / View 8
+BUCKET_IDS = {
+    "PENDING": 4, "TO-DO": 4,
+    "DESIGN": 7, "TRIAGED": 7,
+    "DOING": 5, "RUNNING": 5, "BREAKDOWN": 5, "IMPLEMENT": 5,
+    "VALIDATION": 8, "VALIDATE": 8,
+    "DONE": 6, "COMPLETED": 6
+}
 
 def get_headers():
+    if not VIKUNJA_API_TOKEN:
+        raise ValueError("VIKUNJA_API_TOKEN is not set.")
     return {
         "Authorization": f"Bearer {VIKUNJA_API_TOKEN}",
         "Content-Type": "application/json"
     }
 
-def create_bead(title, description, requesting_agent, assigned_agent=None):
-    """Creates a new bead as a Vikunja task."""
-    if not VIKUNJA_API_TOKEN:
-        print("Vikunja API Token not set. Falling back to local file (legacy).")
-        return create_legacy_bead(title, description, requesting_agent, assigned_agent)
-
+def create_bead(title: str, description: str, requesting_agent: str, assigned_agent: str = None, stage: str = "PENDING", parent_id: str = None) -> str:
+    """Creates a new bead directly in a Kanban bucket and optionally links to a parent."""
     url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/tasks"
+    
+    metadata = {
+        "requesting_agent": requesting_agent,
+        "assigned_agent": assigned_agent,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "stage": stage.upper(),
+        "workflow_id": None,
+        "context": {},
+        "resolution": None
+    }
     
     payload = {
         "title": title,
-        "description": f"{description}\n\n--- AGENT METADATA ---\n" + json.dumps({
-            "requesting_agent": requesting_agent,
-            "assigned_agent": assigned_agent,
-            "created_at": datetime.utcnow().isoformat(),
-            "status": "pending"
-        }, indent=2)
+        "description": f"{description}\n\n--- AGENT METADATA ---\n{json.dumps(metadata, indent=2)}",
     }
     
-    try:
-        with httpx.Client() as client:
-            # Vikunja project endpoint requires PUT for task creation
-            response = client.put(url, headers=get_headers(), json=payload)
-            response.raise_for_status()
-            task = response.json()
-            bead_id = str(task['id'])
-            print(f"Created Vikunja bead: {bead_id}")
-            return bead_id
-    except Exception as e:
-        print(f"Failed to create Vikunja task: {e}")
-        return create_legacy_bead(title, description, requesting_agent, assigned_agent)
-
-def read_bead(bead_id):
-    """Reads a bead from Vikunja."""
-    if not str(bead_id).isdigit():
-        return read_legacy_bead(bead_id)
-
-    url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}"
-    try:
-        with httpx.Client() as client:
-            response = client.get(url, headers=get_headers())
-            response.raise_for_status()
-            task = response.json()
+    with httpx.Client() as client:
+        resp = client.put(url, headers=get_headers(), json=payload)
+        resp.raise_for_status()
+        task_id = str(resp.json()['id'])
+        
+        # Associate with the specific Kanban bucket
+        move_to_bucket(task_id, stage.upper())
+        
+        # Link to parent
+        if parent_id:
+            link_beads(parent_id, task_id, relation_kind="subtask")
             
-            desc_parts = task.get("description", "").split("--- AGENT METADATA ---")
-            metadata = {}
-            clean_desc = task.get("description", "")
-            if len(desc_parts) > 1:
-                try:
-                    metadata = json.loads(desc_parts[1].strip())
-                    clean_desc = desc_parts[0].strip()
-                except:
-                    pass
-            
-            return {
-                "id": str(task['id']),
-                "title": task['title'],
-                "description": clean_desc,
-                "status": metadata.get("status", "pending"),
-                "requesting_agent": metadata.get("requesting_agent"),
-                "assigned_agent": metadata.get("assigned_agent"),
-                "created_at": metadata.get("created_at"),
-                "updated_at": task.get("updated"),
-                "context": metadata.get("context", {}),
-                "resolution": metadata.get("resolution")
-            }
-    except Exception as e:
-        print(f"Failed to read Vikunja task {bead_id}: {e}")
-        raise FileNotFoundError(f"Bead {bead_id} not found in Vikunja.")
+        return task_id
 
-def update_bead(bead_id, updates):
-    """Updates a bead in Vikunja."""
-    if not str(bead_id).isdigit():
-        return update_legacy_bead(bead_id, updates)
+def move_to_bucket(bead_id: str, stage_name: str):
+    """Moves a task to a specific Kanban bucket."""
+    bucket_id = BUCKET_IDS.get(stage_name.upper())
+    if not bucket_id: return
 
-    current = read_bead(bead_id)
+    if stage_name.upper() in ["DONE", "COMPLETED"]:
+        with httpx.Client() as client:
+            client.post(f"{VIKUNJA_BASE_URL}/tasks/{bead_id}", headers=get_headers(), json={"done": True})
+
+    url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/views/{VIKUNJA_KANBAN_VIEW_ID}/buckets/{bucket_id}/tasks"
+    payload = {"task_id": int(bead_id)}
     
-    status = updates.get("status", current.get("status"))
-    resolution = updates.get("resolution", current.get("resolution"))
-    context = current.get("context", {})
-    if "context" in updates:
-        context.update(updates["context"])
-    
-    new_metadata = {
-        "requesting_agent": current.get("requesting_agent"),
-        "assigned_agent": current.get("assigned_agent"),
-        "created_at": current.get("created_at"),
-        "status": status,
-        "resolution": resolution,
-        "context": context
-    }
-    
-    url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}"
+    with httpx.Client() as client:
+        client.post(url, headers=get_headers(), json=payload)
+
+def link_beads(parent_id: str, child_id: str, relation_kind: str = "subtask"):
+    """Links two beads using task relations."""
+    url = f"{VIKUNJA_BASE_URL}/tasks/{child_id}/relations"
     payload = {
-        "title": updates.get("title", current.get("title")),
-        "description": f"{updates.get('description', current.get('description'))}\n\n--- AGENT METADATA ---\n" + json.dumps(new_metadata, indent=2)
-    }
-    
-    # Explicitly handle the 'done' state
-    if "done" in updates:
-        payload["done"] = updates["done"]
-    elif status == "completed":
-        payload["done"] = True
-    else:
-        # Default to False for all other active states
-        payload["done"] = False
-
-    try:
-        with httpx.Client() as client:
-            response = client.post(url, headers=get_headers(), json=payload)
-            response.raise_for_status()
-            print(f"Updated Vikunja bead: {bead_id}")
-            return read_bead(bead_id)
-    except Exception as e:
-        print(f"Failed to update Vikunja task {bead_id}: {e}")
-        return update_legacy_bead(bead_id, updates)
-
-def list_beads(status=None):
-    if not VIKUNJA_API_TOKEN:
-        return []
-    
-    url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/tasks"
-    try:
-        with httpx.Client() as client:
-            response = client.get(url, headers=get_headers())
-            response.raise_for_status()
-            tasks = response.json()
-            return [{"id": str(t['id']), "title": t['title'], "status": "vikunja"} for t in tasks]
-    except:
-        return []
-
-# --- Legacy Support ---
-def get_beads_dirs():
-    paths = [Path("/app/Homelab/.beads"), Path("/app/BettingApp/.beads"), Path(".beads")]
-    return [p for p in paths if p.exists() and p.is_dir()]
-
-def create_legacy_bead(title, description, requesting_agent, assigned_agent=None):
-    bead_id = str(uuid.uuid4())
-    bead_data = {
-        "id": bead_id, "title": title, "description": description, "status": "pending",
-        "requesting_agent": requesting_agent, "assigned_agent": assigned_agent,
-        "created_at": datetime.utcnow().isoformat(), "updated_at": datetime.utcnow().isoformat(),
-        "context": {}, "resolution": None
-    }
-    dirs = get_beads_dirs()
-    file_path = (dirs[0] if dirs else Path(".beads")) / f"{bead_id}.json"
-    with open(file_path, "w") as f: json.dump(bead_data, f, indent=4)
-    print(f"Created legacy bead: {bead_id}")
-    return bead_id
-
-def read_legacy_bead(bead_id):
-    for directory in get_beads_dirs():
-        file_path = directory / f"{bead_id}.json"
-        if file_path.exists():
-            with open(file_path, "r") as f: return json.load(f)
-    raise FileNotFoundError(f"Legacy bead {bead_id} not found.")
-
-def update_legacy_bead(bead_id, updates):
-    for directory in get_beads_dirs():
-        file_path = directory / f"{bead_id}.json"
-        if file_path.exists():
-            with open(file_path, "r") as f: data = json.load(f)
-            data.update(updates)
-            data["updated_at"] = datetime.utcnow().isoformat()
-            with open(file_path, "w") as f: json.dump(data, f, indent=4)
-            print(f"Updated legacy bead: {bead_id}")
-            return data
-    raise FileNotFoundError(f"Legacy bead {bead_id} not found.")
-
-def upload_attachment(bead_id, file_path):
-    """Uploads a file as an attachment to a Vikunja task."""
-    if not str(bead_id).isdigit() or not os.path.exists(file_path):
-        print(f"Skipping attachment: Bead ID {bead_id} is not Vikunja-native or file missing.")
-        return
-
-    url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}/attachments"
-    # Note: We do NOT send Content-Type: application/json for multipart uploads
-    headers = {"Authorization": f"Bearer {VIKUNJA_API_TOKEN}"}
-    
-    try:
-        with open(file_path, "rb") as f:
-            files = {"file": (os.path.basename(file_path), f)}
-            with httpx.Client() as client:
-                response = client.put(url, headers=headers, files=files)
-                response.raise_for_status()
-                print(f"Uploaded attachment {file_path} to Vikunja bead {bead_id}")
-    except Exception as e:
-        print(f"Failed to upload attachment: {e}")
-
-def add_comment(bead_id, comment_text):
-    """Adds a comment to a Vikunja task with an AGENT signature."""
-    if not str(bead_id).isdigit():
-        print(f"Skipping comment: Bead ID {bead_id} is not Vikunja-native.")
-        return
-
-    # Add signature to break webhook feedback loops
-    signed_comment = f"{comment_text}\n\n[AGENT_SIGNATURE]"
-    
-    url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}/comments"
-    headers = {
-        "Authorization": f"Bearer {VIKUNJA_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    payload = {"comment": signed_comment}
-    
-    try:
-        with httpx.Client() as client:
-            response = client.put(url, headers=headers, json=payload)
-            response.raise_for_status()
-            print(f"Added comment to Vikunja bead {bead_id}")
-    except Exception as e:
-        print(f"Failed to add comment: {e}")
-
-def link_beads(parent_id, child_id, relation_kind="subtask"):
-    """Creates a relationship between two Vikunja tasks."""
-    if not str(parent_id).isdigit() or not str(child_id).isdigit():
-        print(f"Skipping link: Task IDs must be Vikunja-native (integers).")
-        return
-
-    url = f"{VIKUNJA_BASE_URL}/tasks/{parent_id}/relations"
-    headers = {
-        "Authorization": f"Bearer {VIKUNJA_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "other_task_id": int(child_id),
+        "other_task_id": int(parent_id),
         "relation_kind": relation_kind
     }
+    with httpx.Client() as client:
+        resp = client.put(url, headers=get_headers(), json=payload)
+
+def update_bead(bead_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
+    """Updates properties and ensures bucket association."""
+    current = read_bead(bead_id)
+    new_stage = updates.get("stage", current.get("stage", "PENDING")).upper()
     
-    try:
+    new_context = current.get("context", {})
+    if "context" in updates: new_context.update(updates["context"])
+    
+    metadata = {
+        "requesting_agent": updates.get("requesting_agent", current.get("requesting_agent")),
+        "assigned_agent": updates.get("assigned_agent", current.get("assigned_agent")),
+        "created_at": current.get("created_at"),
+        "stage": new_stage,
+        "workflow_id": updates.get("workflow_id", current.get("workflow_id")),
+        "resolution": updates.get("resolution", current.get("resolution")),
+        "context": new_context
+    }
+    
+    payload = {
+        "title": updates.get("title", current.get("title")),
+        "description": f"{updates.get('description', current.get('description'))}\n\n--- AGENT METADATA ---\n{json.dumps(metadata, indent=2)}"
+    }
+    
+    if "done" in updates: payload["done"] = updates["done"]
+    elif new_stage in ["DONE", "COMPLETED"]: payload["done"] = True
+
+    with httpx.Client() as client:
+        client.post(f"{VIKUNJA_BASE_URL}/tasks/{current['id']}", headers=get_headers(), json=payload)
+        if "stage" in updates:
+            move_to_bucket(current['id'], new_stage)
+            
+        return read_bead(current['id'])
+
+def read_bead(bead_id: str) -> Dict[str, Any]:
+    url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}"
+    with httpx.Client() as client:
+        resp = client.get(url, headers=get_headers())
+        if resp.status_code == 404:
+            idx_url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/tasks?filter=index%20%3D%20{bead_id}"
+            resp = client.get(idx_url, headers=get_headers())
+            task = resp.json()[0]
+        else:
+            task = resp.json()
+        return _map_task_to_bead(task)
+
+def list_beads(status: str = None) -> List[Dict[str, Any]]:
+    url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/tasks?per_page=100&sort_by[]=id&order_by[]=desc"
+    with httpx.Client() as client:
+        resp = client.get(url, headers=get_headers())
+        tasks = resp.json()
+        beads = [_map_task_to_bead(t) for t in tasks]
+        if status: beads = [b for b in beads if b["stage"] == status.upper()]
+        return beads
+
+def add_comment(bead_id: str, comment_text: str):
+    """Adds a comment with AGENT signature."""
+    url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}/comments"
+    payload = {"comment": f"{comment_text}\n\n[AGENT_SIGNATURE]"}
+    with httpx.Client() as client:
+        client.put(url, headers=get_headers(), json=payload)
+
+def upload_attachment(bead_id: str, file_path: str):
+    """Uploads a file attachment."""
+    if not os.path.exists(file_path): return
+    url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}/attachments"
+    with open(file_path, "rb") as f:
+        files = {"files": (os.path.basename(file_path), f)}
         with httpx.Client() as client:
-            response = client.put(url, headers=headers, json=payload)
-            response.raise_for_status()
-            print(f"Linked bead {child_id} to {parent_id} as {relation_kind}")
-    except Exception as e:
-        print(f"Failed to link beads: {e}")
+            client.put(url, headers=get_headers(), files=files)
+
+def _map_task_to_bead(task: Dict[str, Any]) -> Dict[str, Any]:
+    desc = task.get("description", "")
+    parts = desc.split("--- AGENT METADATA ---")
+    metadata = {}
+    if len(parts) > 1:
+        try: metadata = json.loads(parts[1].strip())
+        except: pass
+    
+    return {
+        "id": str(task['id']), "index": str(task['index']), "title": task['title'],
+        "stage": metadata.get("stage", "PENDING").upper(),
+        "requesting_agent": metadata.get("requesting_agent"),
+        "assigned_agent": metadata.get("assigned_agent"),
+        "created_at": metadata.get("created_at"),
+        "workflow_id": metadata.get("workflow_id"),
+        "context": metadata.get("context", {}),
+        "resolution": metadata.get("resolution"),
+        "bucket_id": task.get("bucket_id"),
+        "done": task.get("done")
+    }
 
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == "list":
         for b in list_beads():
-            print(f"[{b['status'].upper()}] {b['id']}: {b['title']}")
+            print(f"[{b['stage']}] #{b['index']} (Done: {b['done']}): {b['title']}")
