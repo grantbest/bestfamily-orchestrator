@@ -25,7 +25,10 @@ from src.workers.mayor_workflow import (
 )
 
 from src.workers.refinery_workflow import (
-    lint_and_format_activity, check_evidence_activity, broadcast_status_activity
+    resolve_refinery_strategy_activity,
+    lint_and_format_activity, check_evidence_activity, 
+    refine_and_merge_activity, cleanup_refinery_activity,
+    broadcast_status_activity
 )
 
 from src.workers.polecat_activities import polecat_developer_activity
@@ -55,7 +58,10 @@ async def main():
             game_designer_activity, domain_experts_activity, quarterback_synthesis_activity,
             breakdown_activity, mark_breakdown_started_activity, get_task_title_activity,
             move_task_activity, check_epic_completion_activity,
-            lint_and_format_activity, check_evidence_activity, broadcast_status_activity
+            resolve_refinery_strategy_activity,
+            lint_and_format_activity, check_evidence_activity, 
+            refine_and_merge_activity, cleanup_refinery_activity,
+            broadcast_status_activity
         ],
         workflow_runner=UnsandboxedWorkflowRunner()
     )
