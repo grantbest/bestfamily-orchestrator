@@ -250,10 +250,12 @@ async def design_refine_activity(bead_id: str, user_comment: str) -> str:
 @activity.defn
 async def breakdown_activity(bead_id: str) -> str:
     """
-    Breaks an Epic into Stories and moves each story to the Doing bucket
-    so they automatically trigger their own Polecat workflows.
+    Breaks an Epic into Stories.
+    Does NOT call link_beads (that fires task.updated on the epic and causes loops).
+    Does NOT move stories to Doing (the fan-out in the workflow does that AFTER starting
+    child workflows, so the webhook sees the child workflow already running and skips).
     """
-    from beads_manager import read_bead, create_bead, link_beads, add_comment, move_to_bucket
+    from beads_manager import read_bead, create_bead, add_comment
     from src.utils.model_router import ModelRouter
 
     bead_data = read_bead(bead_id)
@@ -289,8 +291,10 @@ async def breakdown_activity(bead_id: str) -> str:
             description=story['description'],
             requesting_agent="quarterback-breakdown"
         )
-        link_beads(bead_id, child_id, relation_kind="subtask")
-        move_to_bucket(child_id, "Doing")
+        # NOTE: Do NOT call link_beads here — it fires task.updated on the epic,
+        # which re-triggers the coordinator if the previous run just completed.
+        # Do NOT call move_to_bucket here — the fan-out workflow does it AFTER
+        # starting child workflows so the webhook sees them as already running.
         created_ids.append(child_id)
 
     add_comment(bead_id, f"✅ **Epic Breakdown Complete!** Created {len(stories)} stories. Starting parallel implementation. [AGENT_SIGNATURE]")
@@ -459,7 +463,10 @@ class MayorWorkflow:
                 except Exception:
                     return f"Breakdown complete (no story IDs returned): {breakdown_result}"
 
-                # Fan-out: start a child MayorWorkflow per story (Doing path)
+                # Fan-out: start child workflow FIRST, then move story to "Doing" in Vikunja.
+                # Order matters: start_child_workflow before move_task_activity so that
+                # the webhook (triggered by move_to_bucket) sees the child already running
+                # and returns "skipped" instead of starting a duplicate.
                 story_handles = []
                 for story_id in story_ids:
                     handle = await workflow.start_child_workflow(
@@ -469,6 +476,10 @@ class MayorWorkflow:
                         task_queue="main-orchestrator-queue",
                     )
                     story_handles.append(handle)
+                    # Move to Doing in UI AFTER child workflow is started
+                    await workflow.execute_activity(
+                        move_task_activity, args=[str(story_id), "Doing"],
+                        start_to_close_timeout=timedelta(seconds=30), retry_policy=retry)
 
                 # Fan-in: wait for all stories to complete
                 logger.info(f"[{bead_id}] Mayor: Waiting for {len(story_handles)} stories to complete.")
