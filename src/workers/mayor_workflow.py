@@ -309,6 +309,29 @@ async def get_task_title_activity(bead_id: str) -> str:
 
 
 @activity.defn
+async def mark_breakdown_started_activity(bead_id: str) -> None:
+    """
+    Stamps [BREAKDOWN_STARTED] into the epic description so the webhook ignores
+    any Vikunja retry events for this epic while breakdown is in progress.
+    Removed once the epic moves to Validation.
+    """
+    from beads_manager import read_bead, update_bead
+    bead = read_bead(bead_id)
+    desc = bead.get("description", "")
+    if "[BREAKDOWN_STARTED]" not in desc:
+        update_bead(bead_id, {"description": desc + "\n\n[BREAKDOWN_STARTED]"})
+
+
+@activity.defn
+async def clear_breakdown_marker_activity(bead_id: str) -> None:
+    """Removes the [BREAKDOWN_STARTED] marker so the epic can be re-triggered later."""
+    from beads_manager import read_bead, update_bead
+    bead = read_bead(bead_id)
+    desc = bead.get("description", "").replace("\n\n[BREAKDOWN_STARTED]", "").replace("[BREAKDOWN_STARTED]", "")
+    update_bead(bead_id, {"description": desc})
+
+
+@activity.defn
 async def move_task_activity(bead_id: str, bucket_name: str) -> str:
     """Moves a Vikunja task to the named bucket. Safe to call from workflow via execute_activity."""
     from beads_manager import move_to_bucket
@@ -452,7 +475,12 @@ class MayorWorkflow:
                 return f"Doing complete — Dev: {dev_result} | Moved to Validation."
 
             else:
-                # Epic → breakdown into stories, then fan-out and await all
+                # Epic → breakdown into stories, then fan-out and await all.
+                # ANTI-LOOP: mark the epic description FIRST so that Vikunja webhook
+                # retries see [BREAKDOWN_STARTED] and are ignored by the webhook filter.
+                await workflow.execute_activity(
+                    mark_breakdown_started_activity, bead_id,
+                    start_to_close_timeout=timedelta(seconds=30), retry_policy=retry)
                 logger.info(f"[{bead_id}] Mayor: Epic detected — initiating breakdown.")
                 breakdown_result = await workflow.execute_activity(
                     breakdown_activity, bead_id,
@@ -485,7 +513,10 @@ class MayorWorkflow:
                 logger.info(f"[{bead_id}] Mayor: Waiting for {len(story_handles)} stories to complete.")
                 await asyncio.gather(*story_handles, return_exceptions=True)
 
-                # All stories done — move epic to Validation
+                # All stories done — clear breakdown marker, move epic to Validation
+                await workflow.execute_activity(
+                    clear_breakdown_marker_activity, bead_id,
+                    start_to_close_timeout=timedelta(seconds=30), retry_policy=retry)
                 await workflow.execute_activity(
                     post_comment_activity,
                     args=[bead_id, f"🏆 **All {len(story_ids)} stories complete!** Moving Epic to Validation. [AGENT_SIGNATURE]"],

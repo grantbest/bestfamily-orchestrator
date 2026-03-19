@@ -35,6 +35,8 @@ from src.workers.mayor_workflow import (
     move_task_activity,
     post_comment_activity,
     check_epic_completion_activity,
+    mark_breakdown_started_activity,
+    clear_breakdown_marker_activity,
 )
 
 # Refinery activities
@@ -105,6 +107,8 @@ async def main():
             move_task_activity,
             post_comment_activity,
             check_epic_completion_activity,
+            mark_breakdown_started_activity,
+            clear_breakdown_marker_activity,
             # Pipeline
             discovery_activity,
             check_changes_activity,
