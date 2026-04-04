@@ -4,8 +4,26 @@ import httpx
 import logging
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
+from dotenv import load_dotenv
 
-VERSION = "1.5.1-RESTORED-FUNCTIONS"
+VERSION = "1.5.2-SRE-FIXED"
+
+# --- Bug 8: Robust .env loading ---
+def _load_env():
+    # Priority: Current dir -> Homelab/shared-services -> Root
+    env_paths = [
+        ".env",
+        "../Homelab/shared-services/.env",
+        "../../Homelab/shared-services/.env",
+        "/app/Homelab/shared-services/.env"
+    ]
+    for path in env_paths:
+        if os.path.exists(path):
+            load_dotenv(path)
+            return path
+    return None
+
+env_loaded_from = _load_env()
 
 # Configuration from Environment
 VIKUNJA_BASE_URL = os.getenv("VIKUNJA_BASE_URL", "https://tracker.bestfam.us/api/v1")
@@ -15,7 +33,7 @@ VIKUNJA_KANBAN_VIEW_ID = os.getenv("VIKUNJA_KANBAN_VIEW_ID", "8")
 
 # Confirmed Bucket IDs for Project 2 / View 8
 BUCKET_IDS = {
-    "PENDING": 4, "TO-DO": 4,
+    "PENDING": 4, "TO-DO": 4, "BACKLOG": 4,
     "DESIGN": 7, "TRIAGED": 7,
     "DOING": 5, "RUNNING": 5, "BREAKDOWN": 5, "IMPLEMENT": 5,
     "VALIDATION": 8, "VALIDATE": 8,
@@ -24,7 +42,7 @@ BUCKET_IDS = {
 
 def get_headers():
     if not VIKUNJA_API_TOKEN:
-        raise ValueError("VIKUNJA_API_TOKEN is not set.")
+        raise ValueError("VIKUNJA_API_TOKEN is not set. Environment not loaded correctly?")
     return {
         "Authorization": f"Bearer {VIKUNJA_API_TOKEN}",
         "Content-Type": "application/json"
@@ -32,6 +50,7 @@ def get_headers():
 
 def create_bead(title: str, description: str, requesting_agent: str, assigned_agent: str = None, stage: str = "PENDING", parent_id: str = None) -> str:
     """Creates a new bead directly in a Kanban bucket and optionally links to a parent."""
+    # Bug 4: Ensure tasks are created with project association first
     url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/tasks"
     
     metadata = {
@@ -50,33 +69,47 @@ def create_bead(title: str, description: str, requesting_agent: str, assigned_ag
     }
     
     with httpx.Client() as client:
+        # Vikunja uses PUT for creating tasks in a project
         resp = client.put(url, headers=get_headers(), json=payload)
         resp.raise_for_status()
         task_id = str(resp.json()['id'])
         
-        # Associate with the specific Kanban bucket
-        move_to_bucket(task_id, stage.upper())
+        # Bug 4: Associate with the specific Kanban bucket in View 8
+        try:
+            move_to_bucket(task_id, stage.upper())
+        except Exception as e:
+            logging.error(f"Failed to move bead {task_id} to bucket {stage}: {e}")
         
         # Link to parent
         if parent_id:
-            link_beads(parent_id, task_id, relation_kind="subtask")
+            try:
+                link_beads(parent_id, task_id, relation_kind="subtask")
+            except Exception as e:
+                logging.error(f"Failed to link bead {task_id} to parent {parent_id}: {e}")
             
         return task_id
 
 def move_to_bucket(bead_id: str, stage_name: str):
-    """Moves a task to a specific Kanban bucket."""
+    """Moves a task to a specific Kanban bucket in View 8."""
     bucket_id = BUCKET_IDS.get(stage_name.upper())
-    if not bucket_id: return
+    if not bucket_id:
+        logging.warning(f"Unknown stage '{stage_name}', cannot move to bucket.")
+        return
 
+    # If DONE, mark task as done
     if stage_name.upper() in ["DONE", "COMPLETED"]:
         with httpx.Client() as client:
             client.post(f"{VIKUNJA_BASE_URL}/tasks/{bead_id}", headers=get_headers(), json={"done": True})
 
+    # Bug 4: Associate with View 8 explicitly
     url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/views/{VIKUNJA_KANBAN_VIEW_ID}/buckets/{bucket_id}/tasks"
     payload = {"task_id": int(bead_id)}
     
     with httpx.Client() as client:
-        client.post(url, headers=get_headers(), json=payload)
+        resp = client.post(url, headers=get_headers(), json=payload)
+        # 400 might mean it's already in the bucket, which is fine
+        if resp.status_code not in [200, 201, 400]:
+            resp.raise_for_status()
 
 def link_beads(parent_id: str, child_id: str, relation_kind: str = "subtask"):
     """Links two beads using task relations."""
@@ -87,9 +120,11 @@ def link_beads(parent_id: str, child_id: str, relation_kind: str = "subtask"):
     }
     with httpx.Client() as client:
         resp = client.put(url, headers=get_headers(), json=payload)
+        if resp.status_code not in [200, 201, 400]:
+            resp.raise_for_status()
 
 def update_bead(bead_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
-    """Updates properties and ensures bucket association."""
+    """Updates properties and ensures bucket association (Bug 5: Atomicity)."""
     current = read_bead(bead_id)
     new_stage = updates.get("stage", current.get("stage", "PENDING")).upper()
     
@@ -115,9 +150,16 @@ def update_bead(bead_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
     elif new_stage in ["DONE", "COMPLETED"]: payload["done"] = True
 
     with httpx.Client() as client:
-        client.post(f"{VIKUNJA_BASE_URL}/tasks/{current['id']}", headers=get_headers(), json=payload)
-        if "stage" in updates:
-            move_to_bucket(current['id'], new_stage)
+        # 1. Update task properties (Metadata)
+        resp = client.post(f"{VIKUNJA_BASE_URL}/tasks/{current['id']}", headers=get_headers(), json=payload)
+        resp.raise_for_status()
+        
+        # 2. Update bucket (UI Sync)
+        if "stage" in updates or new_stage != current.get("stage"):
+            try:
+                move_to_bucket(current['id'], new_stage)
+            except Exception as e:
+                logging.error(f"Sync error: Updated metadata for {bead_id} but failed to move bucket to {new_stage}: {e}")
             
         return read_bead(current['id'])
 

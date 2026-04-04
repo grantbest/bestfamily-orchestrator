@@ -1,0 +1,16 @@
+INFO:MayorWorker:🏛️ Mayor Worker: Connected to Temporal at localhost:7233
+INFO:MayorWorker:🏛️ MAYOR WORKER STARTED (Polling main-orchestrator-queue)
+INFO:httpx:HTTP Request: GET https://tracker.bestfam.us/api/v1/tasks/516 "HTTP/1.1 200 OK"
+INFO:root:ModelRouter: Trying openai/gpt-4o (Attempt 1/3)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:root:ModelRouter: Trying openai/gpt-4o (Attempt 1/3)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:root:ModelRouter: Trying openai/gpt-4o (Attempt 1/3)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:root:ModelRouter: Trying openai/gpt-4o-mini (Attempt 1/3)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://tracker.bestfam.us/api/v1/tasks/516 "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://tracker.bestfam.us/api/v1/tasks/516 "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://tracker.bestfam.us/api/v1/tasks/516 "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://tracker.bestfam.us/api/v1/tasks/516 "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: PUT https://tracker.bestfam.us/api/v1/tasks/516/comments "HTTP/1.1 201 Created"

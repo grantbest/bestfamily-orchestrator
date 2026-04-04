@@ -15,11 +15,11 @@ async def trigger_bead(title, description):
     # 2. Connect to Temporal
     client = await Client.connect("localhost:7233")
 
-    # 3. Start the TriageWorkflow on the main-orchestrator-queue
+    # 3. Start the MayorWorkflow on the main-orchestrator-queue
     # Note: We use string reference for the workflow name to match the definition
-    print(f"Starting TriageWorkflow for bead {bead_id}...")
+    print(f"Starting MayorWorkflow for bead {bead_id}...")
     handle = await client.start_workflow(
-        "TriageWorkflow",
+        "MayorWorkflow",
         args=[bead_id, "Design"],
         id=f"agile-task-{bead_id}-design-manual",
         task_queue="main-orchestrator-queue"

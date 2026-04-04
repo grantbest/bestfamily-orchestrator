@@ -21,9 +21,8 @@ class ModelRouter:
                    preferred_model: str = "auto",
                    json_mode: bool = True) -> Dict[str, Any]:
         """
-        Executes a chat request with automatic fallback logic.
+        Executes a chat request with automatic fallback logic and exponential backoff.
         Priority: OpenAI (gpt-4o) -> Gemini (2.0-flash) -> Ollama (Local).
-        Using OpenAI first because Gemini Free Tier has been unstable with SSL handshakes.
         """
         model_priority = []
 
@@ -42,21 +41,35 @@ class ModelRouter:
         model_priority.append(("ollama", "llama3:latest"))
 
         for provider, model in model_priority:
-            try:
-                logging.info(f"ModelRouter: Trying {provider}/{model}")
-                if provider == "gemini":
-                    return await self._call_gemini(prompt, system_prompt, model, json_mode)
-                elif provider == "openai":
-                    return await self._call_openai_compatible(prompt, system_prompt, model, "https://api.openai.com/v1", self.openai_key, json_mode)
-                elif provider == "anthropic":
-                    return await self._call_anthropic(prompt, system_prompt, model, json_mode)
-                elif provider == "ollama":
-                    return await self._call_ollama(prompt, system_prompt, model, json_mode)
-            except Exception as e:
-                logging.warning(f"ModelRouter: {provider}/{model} failed: {e}")
-                continue
+            max_retries = 3
+            backoff_base = 2
+            
+            for attempt in range(max_retries):
+                try:
+                    logging.info(f"ModelRouter: Trying {provider}/{model} (Attempt {attempt+1}/{max_retries})")
+                    if provider == "gemini":
+                        return await self._call_gemini(prompt, system_prompt, model, json_mode)
+                    elif provider == "openai":
+                        return await self._call_openai_compatible(prompt, system_prompt, model, "https://api.openai.com/v1", self.openai_key, json_mode)
+                    elif provider == "anthropic":
+                        return await self._call_anthropic(prompt, system_prompt, model, json_mode)
+                    elif provider == "ollama":
+                        return await self._call_ollama(prompt, system_prompt, model, json_mode)
+                except Exception as e:
+                    error_str = str(e).lower()
+                    # If it's a 404 or something that won't change, we skip retries and move to next provider
+                    if "404" in error_str or "not found" in error_str:
+                        logging.warning(f"ModelRouter: {provider}/{model} not found: {e}. Moving to next provider.")
+                        break
+                    
+                    if attempt < max_retries - 1:
+                        sleep_time = backoff_base ** attempt
+                        logging.warning(f"ModelRouter: {provider}/{model} failed with '{e}'. Retrying in {sleep_time}s...")
+                        await asyncio.sleep(sleep_time)
+                    else:
+                        logging.warning(f"ModelRouter: {provider}/{model} failed after {max_retries} attempts: {e}")
 
-        raise RuntimeError("ModelRouter: All models and fallbacks failed.")
+        raise RuntimeError("ModelRouter: All models and fallbacks failed after retries.")
 
     async def _call_gemini(self, prompt, system, model, json_mode):
         try:

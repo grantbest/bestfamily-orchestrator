@@ -31,6 +31,7 @@ async def create_sre_bug_activity(error_details: str) -> str:
     bead_id = create_bead(
         title=f"[PIPELINE FAILURE] Auto-generated Bug",
         description=f"The MasterPipelineWorkflow failed with the following error:\n\n{error_details}",
+        requesting_agent="sre-fallback",
         assigned_agent="sre-agent"
     )
     print(f"🚨 SRE FALLBACK TRIGGERED: Created Bug Bead {bead_id}")
@@ -61,7 +62,7 @@ async def deploy_activity(bead_id: str) -> str:
 @workflow.defn
 class MasterPipelineWorkflow:
     @workflow.run
-    async def run(self, bead_id: str, title: str, description: str, services: list) -> str:
+    async def run(self, bead_id: str, title: str, description: str, services: list = None) -> str:
         """
         The Master SDLC Pipeline with global SRE error-handling fallback and Smart Conditional Deployments.
         """
@@ -81,14 +82,20 @@ class MasterPipelineWorkflow:
                 retry_policy=standard_retry
             )
 
+            # If services not provided explicitly, use those from scope
+            active_services = services or scope.get("services", [])
+            if not active_services:
+                 # Fallback: if no services found, we can't do anything
+                 return "Pipeline Finished: No services to process."
+
             deployment_results = []
 
-            for service in services:
-                name = service['name']
-                path = service['path']
+            for service in active_services:
+                name = service.get('name')
+                path = service.get('path')
                 last_hash = service.get('last_hash')
 
-                # Step 1: Check for Changes
+                if not name or not path: continue
                 change_data = await workflow.execute_activity(
                     check_changes_activity,
                     args=[name, path],
