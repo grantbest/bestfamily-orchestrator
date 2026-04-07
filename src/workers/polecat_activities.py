@@ -18,6 +18,28 @@ from beads_manager import read_bead, update_bead
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import httpx
+
+@activity.defn
+async def discord_alert_activity(alert_data: dict) -> str:
+    """
+    GASTOWN ALERTING: Sends a formatted alert to Discord.
+    Supported via Temporal retries.
+    """
+    webhook_url = alert_data.get("webhook_url")
+    if not webhook_url:
+        raise ValueError("Discord webhook URL missing in alert_data")
+    
+    payload = alert_data.get("payload")
+    game_id = alert_data.get("game_id", "Unknown")
+    
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(webhook_url, json=payload, timeout=10.0)
+        resp.raise_for_status()
+        
+    logger.info(f"✅ Gastown Alert Sent for Game {game_id}")
+    return f"Alert sent for {game_id}"
+
 @activity.defn
 async def polecat_developer_activity(bead_id: str) -> str:
     """
@@ -56,19 +78,25 @@ async def polecat_developer_activity(bead_id: str) -> str:
     
     try:
         # Clean up if exists (stale run)
+        # SRE: Prune worktrees first to clear any stale metadata
+        subprocess.run(["git", "-C", base_repo_path, "worktree", "prune"], check=False)
+
         if os.path.exists(worktree_path):
             logger.info(f"🐾 Polecat: Cleaning up stale worktree at {worktree_path}")
-            # Try to remove git worktree first
             subprocess.run(["git", "-C", base_repo_path, "worktree", "remove", "-f", worktree_path], check=False, capture_output=True)
             if os.path.exists(worktree_path):
-                shutil.rmtree(worktree_path)
+                shutil.rmtree(worktree_path, ignore_errors=True)
 
-        # Create Worktree
-        # SRE: Ensure we don't fail if the branch already exists (from a previous failed attempt)
+        # Forcefully delete the branch if it exists
         logger.info(f"🐾 Polecat: Ensuring branch {branch_name} is clean")
         subprocess.run(["git", "-C", base_repo_path, "branch", "-D", branch_name], check=False, capture_output=True)
 
-        # git worktree add -b <new-branch> <path> <start-point>
+        # Final check: if 'git worktree list' still shows it, try removing by path again
+        wt_list = subprocess.run(["git", "-C", base_repo_path, "worktree", "list"], capture_output=True, text=True).stdout
+        if worktree_path in wt_list:
+            subprocess.run(["git", "-C", base_repo_path, "worktree", "remove", "-f", worktree_path], check=False)
+
+        # Create Worktree
         logger.info(f"🐾 Polecat: Creating worktree and branch {branch_name}")
         subprocess.run(
             ["git", "-C", base_repo_path, "worktree", "add", "-b", branch_name, worktree_path, "main"], 

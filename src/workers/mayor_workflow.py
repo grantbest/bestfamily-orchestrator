@@ -306,6 +306,13 @@ async def get_task_title_activity(bead_id: str) -> str:
 
 
 @activity.defn
+async def get_bead_context_activity(bead_id: str) -> dict:
+    """Fetches bead context. Used for alert payloads."""
+    from beads_manager import read_bead
+    return read_bead(bead_id).get("context", {})
+
+
+@activity.defn
 async def mark_breakdown_started_activity(bead_id: str) -> None:
     """
     Stamps [BREAKDOWN_STARTED] into the epic description so the webhook ignores
@@ -452,8 +459,27 @@ class MayorWorkflow:
             title = await workflow.execute_activity(
                 get_task_title_activity, bead_id,
                 start_to_close_timeout=timedelta(seconds=30), retry_policy=retry)
-            
+
             logger.info(f"[{bead_id}] Mayor Doing: title='{title}'")
+
+            # GASTOWN ALERTING (V2.5)
+            if title.startswith("[ALERT]"):
+                context = await workflow.execute_activity(
+                    get_bead_context_activity, bead_id,
+                    start_to_close_timeout=timedelta(seconds=30), retry_policy=retry)
+
+                if context.get("type") == "DISCORD_ALERT":
+                    alert_data = context.get("alert_data")
+                    from src.workers.polecat_activities import discord_alert_activity
+                    res = await workflow.execute_activity(
+                        discord_alert_activity, alert_data,
+                        start_to_close_timeout=timedelta(minutes=1),
+                        task_queue="betting-app-queue", retry_policy=retry)
+
+                    await workflow.execute_activity(
+                        move_task_activity, args=[bead_id, "Done"],
+                        start_to_close_timeout=timedelta(seconds=30), retry_policy=retry)
+                    return f"Alert dispatched: {res}"
 
             if _is_story(title):
                 logger.info(f"[{bead_id}] Mayor: Story detected — routing to Polecat.")
@@ -465,6 +491,9 @@ class MayorWorkflow:
                     polecat_developer_activity, bead_id,
                     start_to_close_timeout=timedelta(minutes=30),
                     task_queue=target_queue, retry_policy=fast_retry)
+
+                if isinstance(dev_result, str) and ("ERROR" in dev_result.upper() or "EXCEPTION" in dev_result.upper()):
+                    raise Exception(f"Implementation Failed: {dev_result}")
 
                 await workflow.execute_activity(
                     move_task_activity, args=[bead_id, "Validation"],
@@ -527,10 +556,27 @@ class MayorWorkflow:
         # ─── VALIDATION: run Refinery gates → Done ────────────────────────────
         elif bucket == "Validation":
             logger.info(f"[{bead_id}] Mayor: Validation triggered — starting Refinery.")
-            refinery_result = await workflow.execute_child_workflow(
-                RefineryWorkflow, bead_id,
-                id=f"refinery-{bead_id}",
-                task_queue="main-orchestrator-queue")
-            return f"Validation complete: {refinery_result}"
+            try:
+                refinery_result = await workflow.execute_child_workflow(
+                    "RefineryWorkflow", bead_id,
+                    id=f"refinery-{bead_id}",
+                    task_queue="refinery-queue")
+                if isinstance(refinery_result, str) and refinery_result.startswith("FAILED"):
+                    raise Exception(f"Refinery Gate Failed: {refinery_result}")
+                return f"Validation complete: {refinery_result}"
+            except Exception as e:
+                logger.error(f"[{bead_id}] Mayor: Refinery Failed! Engaging SRE Agent.")
+                await workflow.execute_activity(
+                    post_comment_activity,
+                    args=[bead_id, f"🚨 **Refinery Gate Failed:** Engaging SRE Agent to investigate logs and heal the system. Error: {str(e)}"],
+                    start_to_close_timeout=timedelta(seconds=30)
+                )
+                # Trigger SRE Healing
+                sre_result = await workflow.execute_child_workflow(
+                    "SREHealingWorkflow",
+                    id=f"sre-healing-{bead_id}",
+                    task_queue="sre-queue"
+                )
+                return f"Refinery failed, but SRE Healing completed: {sre_result}"
 
         return f"Mayor ignored bucket: {bucket}"

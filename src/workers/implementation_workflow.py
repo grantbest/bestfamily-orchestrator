@@ -30,6 +30,9 @@ class ImplementationWorkflow:
             start_to_close_timeout=timedelta(minutes=30),
             task_queue=target_queue, retry_policy=fast_retry)
 
+        if isinstance(dev_result, str) and ("ERROR" in dev_result.upper() or "EXCEPTION" in dev_result.upper()):
+            raise Exception(f"Implementation Failed: {dev_result}")
+
         # 3. Move to Validation
         await workflow.execute_activity(
             move_task_activity, 
