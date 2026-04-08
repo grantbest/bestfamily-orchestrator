@@ -15,7 +15,7 @@ from src.workers.mayor_workflow import (
 
 logger = logging.getLogger(__name__)
 
-@workflow.defn
+@workflow.defn(name="BreakdownWorkflow")
 class BreakdownWorkflow:
     @workflow.run
     async def run(self, bead_id: str) -> str:
@@ -39,6 +39,7 @@ class BreakdownWorkflow:
         # 3. Fan-out: Start Child Workflows
         story_handles = []
         for story_id in story_ids:
+            logger.info(f"Breakdown[{bead_id}]: Starting ImplementationWorkflow for story {story_id}")
             # Each story gets an ImplementationWorkflow
             handle = await workflow.start_child_workflow(
                 "ImplementationWorkflow",
@@ -49,6 +50,7 @@ class BreakdownWorkflow:
             story_handles.append(handle)
             
             # 4. Move story to 'Doing' in Vikunja
+            logger.info(f"Breakdown[{bead_id}]: Moving story {story_id} to Doing")
             await workflow.execute_activity(
                 move_task_activity, 
                 args=[str(story_id), "Doing"],

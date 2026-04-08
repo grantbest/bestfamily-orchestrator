@@ -12,7 +12,7 @@ from src.workers.mayor_workflow import (
 )
 from src.workers.polecat_activities import polecat_developer_activity
 
-@workflow.defn
+@workflow.defn(name="ImplementationWorkflow")
 class ImplementationWorkflow:
     @workflow.run
     async def run(self, bead_id: str) -> str:

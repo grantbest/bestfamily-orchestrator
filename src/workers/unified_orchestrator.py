@@ -21,17 +21,20 @@ from src.workers.pipeline_workflow import (
 from src.workers.mayor_workflow import (
     triage_task_queue, ba_design_activity, architect_design_activity,
     game_designer_activity, domain_experts_activity, quarterback_synthesis_activity,
+    design_refine_activity,
     breakdown_activity, mark_breakdown_started_activity, get_task_title_activity,
-    move_task_activity, check_epic_completion_activity
+    get_bead_context_activity,
+    clear_breakdown_marker_activity,
+    move_task_activity, post_comment_activity,
+    check_epic_completion_activity
 )
 
 from src.workers.refinery_workflow import (
-    resolve_refinery_strategy_activity,
-    lint_and_format_activity, check_evidence_activity, 
-    refine_and_merge_activity, cleanup_refinery_activity,
-    broadcast_status_activity, read_bead_activity,
-    integration_test_activity, rollback_merge_activity,
-    create_gate_failure_bug_activity, synthetic_health_check_activity
+    data_integrity_audit_activity,
+    playwright_e2e_audit_activity,
+    pre_commit_audit_activity,
+    cleanup_refinery_activity,
+    broadcast_status_activity
 )
 
 from src.workers.nexus_security import (
@@ -59,10 +62,13 @@ async def run_worker_with_restart(name, worker_coro):
             await asyncio.sleep(5)
 
 async def main():
+    from src.utils.env_loader import EnvLoader
+    EnvLoader.load(os.getcwd())
+    
     print(f"📦 BEADS_MANAGER VERSION: {beads_manager.VERSION}")
     
     temporal_address = os.getenv("TEMPORAL_ADDRESS", "localhost:7233")
-    temporal_namespace = os.getenv("TEMPORAL_NAMESPACE", "gastown")
+    temporal_namespace = os.getenv("TEMPORAL_NAMESPACE", "default")
     
     # Bug 8: Connection resilience
     max_retries = 5
@@ -88,15 +94,18 @@ async def main():
             secure_activity, deploy_activity, create_sre_bug_activity,
             triage_task_queue, ba_design_activity, architect_design_activity,
             game_designer_activity, domain_experts_activity, quarterback_synthesis_activity,
+            design_refine_activity,
             breakdown_activity, mark_breakdown_started_activity, get_task_title_activity,
-            move_task_activity, check_epic_completion_activity,
-            resolve_refinery_strategy_activity,
-            lint_and_format_activity, check_evidence_activity, 
-            refine_and_merge_activity, cleanup_refinery_activity,
-            broadcast_status_activity, read_bead_activity,
-            run_security_scans_activity,
-            integration_test_activity, rollback_merge_activity,
-            create_gate_failure_bug_activity, synthetic_health_check_activity
+            get_bead_context_activity,
+            clear_breakdown_marker_activity,
+            move_task_activity, post_comment_activity,
+            check_epic_completion_activity,
+            data_integrity_audit_activity,
+            playwright_e2e_audit_activity,
+            pre_commit_audit_activity,
+            cleanup_refinery_activity,
+            broadcast_status_activity,
+            run_security_scans_activity
         ],
         nexus_service_handlers=[SecurityAuditServiceHandler()],
         workflow_runner=UnsandboxedWorkflowRunner()

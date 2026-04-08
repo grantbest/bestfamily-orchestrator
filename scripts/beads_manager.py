@@ -4,170 +4,94 @@ import httpx
 import logging
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
+from pathlib import Path
 from dotenv import load_dotenv
 
-VERSION = "1.5.2-SRE-FIXED"
+# Setup logging
+logger = logging.getLogger(__name__)
 
-# --- Bug 8: Robust .env loading ---
-def _load_env():
-    # Priority: Current dir -> Homelab/shared-services -> Root
-    env_paths = [
-        ".env",
-        "../Homelab/shared-services/.env",
-        "../../Homelab/shared-services/.env",
-        "/app/Homelab/shared-services/.env"
-    ]
-    for path in env_paths:
-        if os.path.exists(path):
-            load_dotenv(path)
-            return path
-    return None
+VERSION = "2.0.0-HEADLESS"
 
-env_loaded_from = _load_env()
+# --- Configuration & Feature Flags ---
+ENABLE_VIKUNJA = os.getenv("ENABLE_VIKUNJA", "false").lower() == "true"
+BEADS_DIR = Path("/Users/grantbest/Documents/Active/BestFam-Orchestrator/.beads")
+BEADS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Configuration from Environment
+# Configuration from Environment (Legacy Vikunja)
 VIKUNJA_BASE_URL = os.getenv("VIKUNJA_BASE_URL", "https://tracker.bestfam.us/api/v1")
 VIKUNJA_API_TOKEN = os.getenv("VIKUNJA_API_TOKEN")
-VIKUNJA_PROJECT_ID = os.getenv("VIKUNJA_PROJECT_ID", "2")
-VIKUNJA_KANBAN_VIEW_ID = os.getenv("VIKUNJA_KANBAN_VIEW_ID", "8")
-
-# Confirmed Bucket IDs for Project 2 / View 8
-BUCKET_IDS = {
-    "PENDING": 4, "TO-DO": 4, "BACKLOG": 4,
-    "DESIGN": 7, "TRIAGED": 7,
-    "DOING": 5, "RUNNING": 5, "BREAKDOWN": 5, "IMPLEMENT": 5,
-    "VALIDATION": 8, "VALIDATE": 8,
-    "DONE": 6, "COMPLETED": 6
-}
+VIKUNJA_PROJECT_ID = os.getenv("VIKUNJA_PROJECT_ID", "1")
 
 def get_headers():
     if not VIKUNJA_API_TOKEN:
-        raise ValueError("VIKUNJA_API_TOKEN is not set. Environment not loaded correctly?")
+        return {}
     return {
         "Authorization": f"Bearer {VIKUNJA_API_TOKEN}",
         "Content-Type": "application/json"
     }
 
-def create_bead(title: str, description: str, requesting_agent: str, assigned_agent: str = None, stage: str = "PENDING", parent_id: str = None) -> str:
-    """Creates a new bead directly in a Kanban bucket and optionally links to a parent."""
-    # Bug 4: Ensure tasks are created with project association first
-    url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/tasks"
+# --- CORE BEAD OPERATIONS (MODULAR) ---
+
+def create_bead(title: str, description: str, requesting_agent: str = "System", assigned_agent: str = None, stage: str = "PENDING", parent_id: str = None) -> str:
+    """Creates a new bead (Vikunja or Local JSON)."""
     
     metadata = {
+        "title": title,
+        "description": description,
         "requesting_agent": requesting_agent,
         "assigned_agent": assigned_agent,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "stage": stage.upper(),
         "workflow_id": None,
         "context": {},
-        "resolution": None
+        "resolution": None,
+        "done": False,
+        "parent_id": parent_id
     }
-    
+
+    if not ENABLE_VIKUNJA:
+        # HEADLESS MODE: Write to JSON
+        existing = list(BEADS_DIR.glob("*.json"))
+        if not existing:
+            new_id = "1"
+        else:
+            new_id = str(max(int(f.stem) for f in existing) + 1)
+        metadata["id"] = new_id
+        metadata["index"] = new_id
+        
+        with open(BEADS_DIR / f"{new_id}.json", "w") as f:
+            json.dump(metadata, f, indent=2)
+        
+        print(f"📄 [HEADLESS] Created Bead #{new_id}: {title}")
+        return new_id
+
+    # VIKUNJA MODE
+    url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/tasks"
     payload = {
         "title": title,
         "description": f"{description}\n\n--- AGENT METADATA ---\n{json.dumps(metadata, indent=2)}",
     }
     
     with httpx.Client() as client:
-        # Vikunja uses PUT for creating tasks in a project
         resp = client.put(url, headers=get_headers(), json=payload)
         resp.raise_for_status()
-        task_id = str(resp.json()['id'])
-        
-        # Bug 4: Associate with the specific Kanban bucket in View 8
-        try:
-            move_to_bucket(task_id, stage.upper())
-        except Exception as e:
-            logging.error(f"Failed to move bead {task_id} to bucket {stage}: {e}")
-        
-        # Link to parent
-        if parent_id:
-            try:
-                link_beads(parent_id, task_id, relation_kind="subtask")
-            except Exception as e:
-                logging.error(f"Failed to link bead {task_id} to parent {parent_id}: {e}")
-            
-        return task_id
-
-def move_to_bucket(bead_id: str, stage_name: str):
-    """Moves a task to a specific Kanban bucket in View 8."""
-    bucket_id = BUCKET_IDS.get(stage_name.upper())
-    if not bucket_id:
-        logging.warning(f"Unknown stage '{stage_name}', cannot move to bucket.")
-        return
-
-    # If DONE, mark task as done
-    if stage_name.upper() in ["DONE", "COMPLETED"]:
-        with httpx.Client() as client:
-            client.post(f"{VIKUNJA_BASE_URL}/tasks/{bead_id}", headers=get_headers(), json={"done": True})
-
-    # Bug 4: Associate with View 8 explicitly
-    url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/views/{VIKUNJA_KANBAN_VIEW_ID}/buckets/{bucket_id}/tasks"
-    payload = {"task_id": int(bead_id)}
-    
-    with httpx.Client() as client:
-        resp = client.post(url, headers=get_headers(), json=payload)
-        # 400 might mean it's already in the bucket, which is fine
-        if resp.status_code not in [200, 201, 400]:
-            resp.raise_for_status()
-
-def link_beads(parent_id: str, child_id: str, relation_kind: str = "subtask"):
-    """Links two beads using task relations."""
-    url = f"{VIKUNJA_BASE_URL}/tasks/{child_id}/relations"
-    payload = {
-        "other_task_id": int(parent_id),
-        "relation_kind": relation_kind
-    }
-    with httpx.Client() as client:
-        resp = client.put(url, headers=get_headers(), json=payload)
-        if resp.status_code not in [200, 201, 400]:
-            resp.raise_for_status()
-
-def update_bead(bead_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
-    """Updates properties and ensures bucket association (Bug 5: Atomicity)."""
-    current = read_bead(bead_id)
-    new_stage = updates.get("stage", current.get("stage", "PENDING")).upper()
-    
-    new_context = current.get("context", {})
-    if "context" in updates: new_context.update(updates["context"])
-    
-    metadata = {
-        "requesting_agent": updates.get("requesting_agent", current.get("requesting_agent")),
-        "assigned_agent": updates.get("assigned_agent", current.get("assigned_agent")),
-        "created_at": current.get("created_at"),
-        "stage": new_stage,
-        "workflow_id": updates.get("workflow_id", current.get("workflow_id")),
-        "resolution": updates.get("resolution", current.get("resolution")),
-        "context": new_context
-    }
-    
-    payload = {
-        "title": updates.get("title", current.get("title")),
-        "description": f"{updates.get('description', current.get('description'))}\n\n--- AGENT METADATA ---\n{json.dumps(metadata, indent=2)}"
-    }
-    
-    if "done" in updates: payload["done"] = updates["done"]
-    elif new_stage in ["DONE", "COMPLETED"]: payload["done"] = True
-
-    with httpx.Client() as client:
-        # 1. Update task properties (Metadata)
-        resp = client.post(f"{VIKUNJA_BASE_URL}/tasks/{current['id']}", headers=get_headers(), json=payload)
-        resp.raise_for_status()
-        
-        # 2. Update bucket (UI Sync)
-        if "stage" in updates or new_stage != current.get("stage"):
-            try:
-                move_to_bucket(current['id'], new_stage)
-            except Exception as e:
-                logging.error(f"Sync error: Updated metadata for {bead_id} but failed to move bucket to {new_stage}: {e}")
-            
-        return read_bead(current['id'])
+        return str(resp.json()['id'])
 
 def read_bead(bead_id: str) -> Dict[str, Any]:
+    """Reads a bead from JSON or Vikunja."""
+    if not ENABLE_VIKUNJA:
+        path = BEADS_DIR / f"{bead_id}.json"
+        if not path.exists():
+            raise FileNotFoundError(f"Bead {bead_id} not found in {BEADS_DIR}")
+        with open(path, "r") as f:
+            return json.load(f)
+
+    # VIKUNJA MODE
     url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}"
     with httpx.Client() as client:
         resp = client.get(url, headers=get_headers())
         if resp.status_code == 404:
+            # Try searching by index
             idx_url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/tasks?filter=index%20%3D%20{bead_id}"
             resp = client.get(idx_url, headers=get_headers())
             task = resp.json()[0]
@@ -175,40 +99,89 @@ def read_bead(bead_id: str) -> Dict[str, Any]:
             task = resp.json()
         return _map_task_to_bead(task)
 
-def list_beads(status: str = None) -> List[Dict[str, Any]]:
-    url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/tasks?per_page=100&sort_by[]=id&order_by[]=desc"
-    with httpx.Client() as client:
-        resp = client.get(url, headers=get_headers())
-        tasks = resp.json()
-        beads = [_map_task_to_bead(t) for t in tasks]
-        if status: beads = [b for b in beads if b["stage"] == status.upper()]
-        return beads
+def update_bead(bead_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
+    """Updates a bead's metadata."""
+    if not ENABLE_VIKUNJA:
+        current = read_bead(bead_id)
+        current.update(updates)
+        # Update timestamp
+        current["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        with open(BEADS_DIR / f"{bead_id}.json", "w") as f:
+            json.dump(current, f, indent=2)
+        return current
 
-def delete_bead(bead_id: str):
-    """Deletes a task from Vikunja."""
-    url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}"
+    # VIKUNJA MODE
+    current = read_bead(bead_id)
+    stage = updates.get("stage", current.get("stage", "PENDING")).upper()
+    
+    metadata = {
+        "stage": stage,
+        "workflow_id": updates.get("workflow_id", current.get("workflow_id")),
+        "resolution": updates.get("resolution", current.get("resolution")),
+        "context": {**current.get("context", {}), **updates.get("context", {})}
+    }
+    
+    payload = {
+        "title": updates.get("title", current.get("title")),
+        "description": f"{updates.get('description', current.get('description'))}\n\n--- AGENT METADATA ---\n{json.dumps(metadata, indent=2)}"
+    }
+
+    # Map stage to Bucket ID
+    # 1=To-Do, 4=Design, 2=Doing, 5=Validation, 3=Done
+    bucket_map = {"PENDING": 1, "DESIGN": 4, "DOING": 2, "VALIDATION": 5, "DONE": 3}
+    
+    # SRE Debug
+    logger.info(f"DEBUG: update_bead Task {bead_id} Stage: {stage} -> Bucket: {bucket_map.get(stage)}")
+    
     with httpx.Client() as client:
-        resp = client.delete(url, headers=get_headers())
-        if resp.status_code in [200, 204]:
-            print(f"✅ Deleted bead {bead_id}")
-        else:
-            print(f"❌ Failed to delete bead {bead_id}: {resp.text}")
+        # 1. Update task title/desc
+        resp = client.post(f"{VIKUNJA_BASE_URL}/tasks/{bead_id}", headers=get_headers(), json=payload)
+        resp.raise_for_status()
+        
+        # 2. Move to bucket if stage mapped
+        if stage in bucket_map:
+            bid = bucket_map[stage]
+            # SRE: In Vikunja, bucket moves are often managed via the view-bucket-task relationship
+            # We assume project 1 and view 4 (Kanban) based on our setup
+            move_url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/views/4/buckets/{bid}/tasks"
+            try:
+                m_resp = client.post(move_url, headers=get_headers(), json={"task_id": int(bead_id)})
+                if m_resp.status_code != 200:
+                    logger.error(f"SRE ERROR: Failed to move task {bead_id} to bucket {bid}. Status: {m_resp.status_code}, Body: {m_resp.text}")
+                else:
+                    logger.info(f"SRE SUCCESS: Moved task {bead_id} to bucket {bid}")
+            except Exception as e:
+                logger.error(f"SRE EXCEPTION moving task {bead_id}: {e}")
+            
+        return read_bead(bead_id)
 
 def add_comment(bead_id: str, comment_text: str):
-    """Adds a comment with AGENT signature."""
+    if not ENABLE_VIKUNJA:
+        print(f"💬 [HEADLESS] Comment on #{bead_id}: {comment_text}")
+        return
+    
     url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}/comments"
     payload = {"comment": f"{comment_text}\n\n[AGENT_SIGNATURE]"}
     with httpx.Client() as client:
         client.put(url, headers=get_headers(), json=payload)
 
-def upload_attachment(bead_id: str, file_path: str):
-    """Uploads a file attachment."""
-    if not os.path.exists(file_path): return
-    url = f"{VIKUNJA_BASE_URL}/tasks/{bead_id}/attachments"
-    with open(file_path, "rb") as f:
-        files = {"files": (os.path.basename(file_path), f)}
-        with httpx.Client() as client:
-            client.put(url, headers=get_headers(), files=files)
+def list_beads(status: str = None) -> List[Dict[str, Any]]:
+    if not ENABLE_VIKUNJA:
+        beads = []
+        for path in BEADS_DIR.glob("*.json"):
+            with open(path, "r") as f:
+                beads.append(json.load(f))
+        if status:
+            beads = [b for b in beads if b["stage"] == status.upper()]
+        return beads
+
+    # VIKUNJA MODE
+    url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/tasks?per_page=100"
+    with httpx.Client() as client:
+        resp = client.get(url, headers=get_headers())
+        tasks = resp.json()
+        return [_map_task_to_bead(t) for t in tasks]
 
 def _map_task_to_bead(task: Dict[str, Any]) -> Dict[str, Any]:
     desc = task.get("description", "")
@@ -219,20 +192,19 @@ def _map_task_to_bead(task: Dict[str, Any]) -> Dict[str, Any]:
         except: pass
     
     return {
-        "id": str(task['id']), "index": str(task['index']), "title": task['title'],
+        "id": str(task['id']), 
+        "index": str(task['index']), 
+        "title": task['title'],
         "stage": metadata.get("stage", "PENDING").upper(),
-        "requesting_agent": metadata.get("requesting_agent"),
-        "assigned_agent": metadata.get("assigned_agent"),
-        "created_at": metadata.get("created_at"),
-        "workflow_id": metadata.get("workflow_id"),
         "context": metadata.get("context", {}),
         "resolution": metadata.get("resolution"),
-        "bucket_id": task.get("bucket_id"),
-        "done": task.get("done")
+        "done": task.get("done", False)
     }
 
 if __name__ == "__main__":
     import sys
+    mode = "VIKUNJA" if ENABLE_VIKUNJA else "HEADLESS"
+    print(f"🐝 BeadsManager v{VERSION} | Mode: {mode}")
     if len(sys.argv) > 1 and sys.argv[1] == "list":
         for b in list_beads():
-            print(f"[{b['stage']}] #{b['index']} (Done: {b['done']}): {b['title']}")
+            print(f"[{b['stage']}] #{b.get('id', '??')} : {b['title']}")

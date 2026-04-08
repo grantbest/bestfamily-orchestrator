@@ -14,7 +14,7 @@ from src.workers.mayor_workflow import (
     quarterback_synthesis_activity
 )
 
-@workflow.defn
+@workflow.defn(name="DesignWorkflow")
 class DesignWorkflow:
     @workflow.run
     async def run(self, bead_id: str) -> str:
