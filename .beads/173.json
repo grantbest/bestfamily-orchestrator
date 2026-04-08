@@ -1,0 +1,17 @@
+{
+  "title": "[STORY] Static Analysis Tool Integration",
+  "description": "Implement static analysis tools to automatically detect all occurrences of ENABLE_VIKUNJA in the codebase. This includes setting up the tool, configuring it to focus on relevant code segments, and ensuring it provides comprehensive reports on the feature flag usage.",
+  "requesting_agent": "quarterback-breakdown",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T23:34:38.872354+00:00",
+  "stage": "VALIDATION",
+  "workflow_id": null,
+  "context": {},
+  "resolution": "Polecat GIT ERROR: Preparing worktree (new branch 'polecat/173')\nfatal: a branch named 'polecat/173' already exists\n",
+  "done": false,
+  "parent_id": "172",
+  "id": "173",
+  "index": "173",
+  "updated_at": "2026-04-07T23:35:31.689130+00:00",
+  "status": "failed"
+}

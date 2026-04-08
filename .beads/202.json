@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] MIN Vs DET - 4/8 | \ud83c\udf21\ufe0f 44\u00b0F | \ud83d\udca8 11mph",
+  "description": "Actionable Alert for Post-Big-Inning Under",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-08T01:14:04.511097+00:00",
+  "stage": "DOING",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 MIN Vs DET - 4/8 | \ud83c\udf21\ufe0f 44\u00b0F | \ud83d\udca8 11mph | Post-Big-Inning Under",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The current situation features a scoreless inning after a big inning in the previous frame, with a highly-ranked bullpen facing a team with a relatively low total runs average. Historically, such scenarios have seen a win probability around 56.6%. Given the current live game state suggests a lower probability (close to bookmaker odds), there appears to be potential Edge in the Post-Big-Inning Under bet.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=MIN%20vs%20DET%204/8)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "823727",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "1.38%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "823727"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "202",
+  "index": "202",
+  "updated_at": "2026-04-08T01:14:04.514908+00:00"
+}

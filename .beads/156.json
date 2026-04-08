@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] MIA Vs CIN - 4/7 | \ud83c\udf21\ufe0f 72\u00b0F | \ud83d\udca8 5mph",
+  "description": "Actionable Alert for Mid-Inning Pen Entry",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T23:02:42.095717+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 MIA Vs CIN - 4/7 | \ud83c\udf21\ufe0f 72\u00b0F | \ud83d\udca8 5mph | Mid-Inning Pen Entry",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The current situation features a highly ranked bullpen facing a lone baserunner in the second inning with a score differential of 0. Historical data suggests an average of 9.11 runs per game in similar situations. Given the low score differential and the presence of a strong bullpen, the implied probability of a run should be lower than the bookmaker odds. Therefore, there is potential for an Edge in this bet.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=MIA%20vs%20CIN%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "823887",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-120",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "4.10%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "823887"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "156",
+  "index": "156",
+  "updated_at": "2026-04-07T23:02:55.763679+00:00"
+}

@@ -9,18 +9,20 @@ from src.workers.refinery_workflow import RefineryWorkflow
 
 # Activities
 from src.workers.refinery_workflow import (
-    refine_and_merge_activity, 
-    lint_and_format_activity,
-    integration_test_activity,
-    rollback_merge_activity,
+    data_integrity_audit_activity,
+    playwright_e2e_audit_activity,
+    pre_commit_audit_activity,
     cleanup_refinery_activity,
-    create_gate_failure_bug_activity,
     broadcast_status_activity
 )
 
 async def main():
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("RefineryWorker")
+    
+    # DEBUG: Check environment
+    logger.info(f"DEBUG: VIKUNJA_API_TOKEN prefix: {os.getenv('VIKUNJA_API_TOKEN', 'MISSING')[:10]}...")
+    logger.info(f"DEBUG: VIKUNJA_BASE_URL: {os.getenv('VIKUNJA_BASE_URL', 'MISSING')}")
     
     temporal_address = os.getenv("TEMPORAL_ADDRESS", "localhost:7233")
     try:
@@ -36,12 +38,10 @@ async def main():
         task_queue="refinery-queue", # Refinery listens on its own dedicated queue
         workflows=[RefineryWorkflow],
         activities=[
-            refine_and_merge_activity, 
-            lint_and_format_activity,
-            integration_test_activity,
-            rollback_merge_activity,
+            data_integrity_audit_activity,
+            playwright_e2e_audit_activity,
+            pre_commit_audit_activity,
             cleanup_refinery_activity,
-            create_gate_failure_bug_activity,
             broadcast_status_activity
         ],
         workflow_runner=UnsandboxedWorkflowRunner(),

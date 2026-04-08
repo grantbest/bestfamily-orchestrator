@@ -1,0 +1,21 @@
+{
+  "title": "[STORY] Setup Homelab infrastructure for prod and dev environments",
+  "description": "Create apps/betting-prod/docker-compose.yml and apps/betting-dev/docker-compose.yml. In betting-prod, run 'dashboard' (port 3000, traefik bestfam.us) and 'engine' (command: python3 engine_v2.py, built from ../../../BettingApp). The engine handles the 2-3 min Discord alerting in prod. Add appropriate Traefik labels. Do the same for betting-dev on dev.bestfam.us. Add a basic test script in tests/ to pass the Integration Crucible. MUST USE homelab-queue.",
+  "requesting_agent": "User-CLI",
+  "assigned_agent": null,
+  "created_at": "2026-04-05T21:21:14.219415+00:00",
+  "stage": "VALIDATION",
+  "workflow_id": null,
+  "context": {
+    "branch": "polecat/28",
+    "worktree": "/tmp/polecats/polecat-28",
+    "base_repo": "/Users/grantbest/Documents/Active/Homelab"
+  },
+  "resolution": "\u274c Polecat Exception: ModelRouter: All models and fallbacks failed after retries.\n\nBranch: polecat/28",
+  "done": false,
+  "parent_id": null,
+  "id": "28",
+  "index": "28",
+  "status": "resolved",
+  "updated_at": "2026-04-05T21:21:39.229670+00:00"
+}

@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] PIT Vs SD - 4/6 | \ud83c\udf21\ufe0f 52\u00b0F | \ud83d\udca8 12mph",
+  "description": "Actionable Alert for Mid-Inning Pen Entry",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-06T23:01:08.352502+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 PIT Vs SD - 4/6 | \ud83c\udf21\ufe0f 52\u00b0F | \ud83d\udca8 12mph | Mid-Inning Pen Entry",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The current situation features a high-bullpen-ranked team entering the game in the 2nd inning with a score differential of 0 and a baserunner on base. Historically, such situations have seen a win probability around 40%. The bookmaker odds suggest a slightly higher probability. This Edge suggests the model favors the team more than the odds suggest, making the bet potentially valuable.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=PIT%20vs%20SD%204/6)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "823401",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-120",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "4.10%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "823401"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "67",
+  "index": "67",
+  "updated_at": "2026-04-06T23:01:16.245284+00:00"
+}

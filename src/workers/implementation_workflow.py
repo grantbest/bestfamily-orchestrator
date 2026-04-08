@@ -24,13 +24,15 @@ class ImplementationWorkflow:
             triage_task_queue, bead_id,
             start_to_close_timeout=timedelta(seconds=60), retry_policy=fast_retry)
 
+        dev_retry = RetryPolicy(initial_interval=timedelta(seconds=10), maximum_attempts=10)
+
         # 2. Implement
         dev_result = await workflow.execute_activity(
             polecat_developer_activity, bead_id,
             start_to_close_timeout=timedelta(minutes=30),
-            task_queue=target_queue, retry_policy=fast_retry)
+            task_queue=target_queue, retry_policy=dev_retry)
 
-        if isinstance(dev_result, str) and ("ERROR" in dev_result.upper() or "EXCEPTION" in dev_result.upper()):
+        if isinstance(dev_result, str) and ("ERROR" in dev_result.upper() or "EXCEPTION" in dev_result.upper() or "FAILED" in dev_result.upper()):
             raise Exception(f"Implementation Failed: {dev_result}")
 
         # 3. Move to Validation

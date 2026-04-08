@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] MIA Vs CIN - 4/6 | \ud83c\udf21\ufe0f 72\u00b0F | \ud83d\udca8 5mph",
+  "description": "Actionable Alert for Mid-Inning Pen Entry",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-06T22:47:26.849313+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 MIA Vs CIN - 4/6 | \ud83c\udf21\ufe0f 72\u00b0F | \ud83d\udca8 5mph | Mid-Inning Pen Entry",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The current game state features a high-ranked bullpen entering the game with two baserunners on base. Historically, games with similar conditions have seen an average of 9.11 total runs scored. The current implied run total suggests a lower expectation (0 runs). This Edge suggests the model probability is higher than the implied bookmaker odds, indicating potential value in betting on the over.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=MIA%20vs%20CIN%204/6)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "823886",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-120",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "4.10%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "823886"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "62",
+  "index": "62",
+  "updated_at": "2026-04-06T22:47:33.595361+00:00"
+}

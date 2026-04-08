@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] DET Vs STL - 4/6 | \ud83c\udf21\ufe0f 44\u00b0F | \ud83d\udca8 15mph",
+  "description": "Actionable Alert for First 2 Batters Reach",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-06T01:13:35.649310+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 DET Vs STL - 4/6 | \ud83c\udf21\ufe0f 44\u00b0F | \ud83d\udca8 15mph | First 2 Batters Reach",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The presence of two baserunners in the sixth inning suggests potential scoring opportunities. Historically, games with runners on base have seen an average of 9.69 runs scored per game. Given the current game state and the relatively weak bullpen ranking of the pitching team, the implied probability of scoring runs might be lower than the actual probability. Therefore, there appears to be an Edge in favor of the bet.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=DET%20vs%20STL%204/6)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "824296",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-130",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "7.75%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "824296"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "50",
+  "index": "50",
+  "updated_at": "2026-04-06T01:13:44.407049+00:00"
+}

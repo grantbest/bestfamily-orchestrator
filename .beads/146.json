@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] NYM Vs AZ - 4/7 | \ud83c\udf21\ufe0f 50\u00b0F | \ud83d\udca8 17mph",
+  "description": "Actionable Alert for First 2 Batters Reach",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T21:34:57.897912+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 NYM Vs AZ - 4/7 | \ud83c\udf21\ufe0f 50\u00b0F | \ud83d\udca8 17mph | First 2 Batters Reach",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*Given the current live game state with two baserunners and a struggling bullpen ranked 15th, the implied bookmaker odds likely overestimate the probability of runs in this situation. Historical data suggests an average of 9.69 runs per game in similar games. Given the low score differential and early stage of the game, the probability of runs should be below the bookmaker odds, creating an Edge opportunity.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=NYM%20vs%20AZ%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "823648",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-130",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "7.75%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "823648"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "146",
+  "index": "146",
+  "updated_at": "2026-04-07T21:35:05.308888+00:00"
+}

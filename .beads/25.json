@@ -1,0 +1,16 @@
+{
+  "title": "[STORY] Deploy and Monitor Epic Changes",
+  "description": "Deploy the changes incrementally to ensure stability in the production environment. Set up monitoring to track the performance and reliability of the rule evaluations and Discord alert integration, and prepare rollback procedures in case of issues.",
+  "requesting_agent": "quarterback-breakdown",
+  "assigned_agent": null,
+  "created_at": "2026-04-05T21:11:15.393457+00:00",
+  "stage": "DOING",
+  "workflow_id": null,
+  "context": {},
+  "resolution": null,
+  "done": false,
+  "parent_id": "25",
+  "id": "25",
+  "index": "25",
+  "updated_at": "2026-04-05T21:11:20.301346+00:00"
+}

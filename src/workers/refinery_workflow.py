@@ -137,6 +137,45 @@ async def pre_commit_audit_activity(bead_id: str) -> str:
     return "SUCCESS"
 
 @activity.defn
+async def refine_and_merge_activity(bead_id: str) -> str:
+    from beads_manager import read_bead, update_bead
+    bead_data = read_bead(bead_id)
+    context = bead_data.get("context", {})
+    branch_name = context.get("branch")
+    base_repo_path = context.get("base_repo")
+    worktree_path = context.get("worktree")
+    if not branch_name or not base_repo_path:
+        logger.warning(f"Refinery: Skipping merge for bead {bead_id} - No git context.")
+        return "SKIPPED: No git context"
+    try:
+        if worktree_path and os.path.exists(worktree_path):
+            subprocess.run(["git", "-C", worktree_path, "add", "."], check=False)
+            subprocess.run(["git", "-C", worktree_path, "commit", "-m", f"Refinery: Final purification for Bead {bead_id}"], capture_output=True)
+            subprocess.run(["git", "-C", worktree_path, "push", "origin", branch_name], check=False)
+        subprocess.run(["git", "-C", base_repo_path, "reset", "--hard", "HEAD"], check=False)
+        subprocess.run(["git", "-C", base_repo_path, "checkout", "main"], check=True, capture_output=True)
+        subprocess.run(["git", "-C", base_repo_path, "pull", "origin", "main"], check=False)
+        merge_proc = subprocess.run(["git", "-C", base_repo_path, "merge", "--no-ff", "-m", f"Refinery: Integrate Bead {bead_id}", branch_name], capture_output=True, text=True)
+        if merge_proc.returncode != 0:
+            return "FAILED: Merge conflict"
+        subprocess.run(["git", "-C", base_repo_path, "push", "origin", "main"], check=False)
+        
+        # SRE: Execute pipeline locally to fulfill "all the things the pipeline provides"
+        pipeline_path = "/Users/grantbest/Documents/Active/Homelab/pipeline.sh"
+        if os.path.exists(pipeline_path):
+            logger.info(f"Refinery[{bead_id}]: Executing local pipeline {pipeline_path}")
+            proc = subprocess.run([pipeline_path], cwd="/Users/grantbest/Documents/Active/Homelab", capture_output=True, text=True)
+            if proc.returncode != 0:
+                logger.error(f"Refinery[{bead_id}]: Pipeline execution failed: {proc.stdout}\n{proc.stderr}")
+                return "FAILED: Pipeline execution failed"
+            else:
+                logger.info(f"Refinery[{bead_id}]: Pipeline execution succeeded.")
+                
+        return "MERGE_SUCCESS"
+    except Exception as e:
+        return f"ERROR: {str(e)}"
+
+@activity.defn
 async def cleanup_refinery_activity(bead_id: str, success: bool = True) -> str:
     from beads_manager import update_bead, add_comment
     if success:
@@ -172,5 +211,9 @@ class RefineryWorkflow:
         visual_audit = await workflow.execute_activity(playwright_e2e_audit_activity, bead_id, start_to_close_timeout=timedelta(minutes=5), retry_policy=retry)
         if visual_audit.startswith("FAILED"): return visual_audit
 
-        # 5. Final Cleanup & Close
+        # 5. Merge and Deploy
+        merge_result = await workflow.execute_activity(refine_and_merge_activity, bead_id, start_to_close_timeout=timedelta(minutes=5), retry_policy=retry)
+        if merge_result.startswith("FAILED"): return merge_result
+
+        # 6. Final Cleanup & Close
         return await workflow.execute_activity(cleanup_refinery_activity, args=[bead_id, True], start_to_close_timeout=timedelta(minutes=5))

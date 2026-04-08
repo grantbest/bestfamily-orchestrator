@@ -1,0 +1,2 @@
+INFO:PolecatWorker:🐾 Polecat Worker: Connected to Temporal at localhost:7233
+INFO:PolecatWorker:🐾 POLECAT WORKER STARTED (Polling homelab-queue)

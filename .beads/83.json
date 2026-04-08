@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] CWS Vs BAL - 4/6 | \ud83c\udf21\ufe0f 48\u00b0F | \ud83d\udca8 3mph",
+  "description": "Actionable Alert for Mid-Inning Pen Entry",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-06T23:43:20.541801+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 CWS Vs BAL - 4/6 | \ud83c\udf21\ufe0f 48\u00b0F | \ud83d\udca8 3mph | Mid-Inning Pen Entry",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The presence of a high-ranked bullpen coupled with a lone baserunner suggests potential for a scoring opportunity. Historically, games with similar conditions have averaged 9 runs per game. Given the current score differential of 0, an edge exists where the model probability (unknown) deviates from the implied bookmaker odds, suggesting potential value in betting on the run total.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=CWS%20vs%20BAL%204/6)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "824619",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-120",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "4.10%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "824619"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "83",
+  "index": "83",
+  "updated_at": "2026-04-06T23:43:28.518988+00:00"
+}

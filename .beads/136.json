@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] CLE Vs KC - 4/7 | \ud83c\udf21\ufe0f 33\u00b0F | \ud83d\udca8 10mph",
+  "description": "Actionable Alert for First 2 Batters Reach",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T19:18:43.678589+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 CLE Vs KC - 4/7 | \ud83c\udf21\ufe0f 33\u00b0F | \ud83d\udca8 10mph | First 2 Batters Reach",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The current game state features two baserunners in the eighth inning with a score differential of 0. Historical data suggests that games with similar situations typically see an average of 9.695 total runs scored. Given the pitching teams bullpen ranking and the recent scoreless streak, the implied total seems slightly low. Therefore, the Edge favors the over bet.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=CLE%20vs%20KC%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "824457",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-130",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "7.75%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "824457"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "136",
+  "index": "136",
+  "updated_at": "2026-04-07T19:18:50.814707+00:00"
+}

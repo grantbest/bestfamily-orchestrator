@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] WSH Vs STL - 4/6 | \ud83c\udf21\ufe0f 61\u00b0F | \ud83d\udca8 7mph",
+  "description": "Actionable Alert for Mid-Inning Pen Entry",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-06T22:51:48.952557+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 WSH Vs STL - 4/6 | \ud83c\udf21\ufe0f 61\u00b0F | \ud83d\udca8 7mph | Mid-Inning Pen Entry",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The presence of a high-ranked bullpen (15th) suggests improved pitching depth. Given the score differential and baserunner, theres potential for runs. Historical data suggests an average of 7.05 total runs per game. The current situation with no runs scored and a baserunner in a low-scoring game suggests an undervalued opportunity. **Therefore, the Edge suggests a potential value play in favor of the team with the baserunner.***\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=WSH%20vs%20STL%204/6)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "822755",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-120",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "4.10%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "822755"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "63",
+  "index": "63",
+  "updated_at": "2026-04-06T22:51:56.786515+00:00"
+}

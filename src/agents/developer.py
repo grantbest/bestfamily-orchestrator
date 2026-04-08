@@ -148,7 +148,7 @@ class DeveloperAgent:
         response = await self.router.chat(
             prompt=prompt,
             system_prompt=system_prompt,
-            preferred_model="complex",
+            preferred_model="ollama",
             json_mode=True
         )
 

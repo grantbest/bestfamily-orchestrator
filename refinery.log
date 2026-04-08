@@ -1,0 +1,4 @@
+INFO:RefineryWorker:DEBUG: VIKUNJA_API_TOKEN prefix: eyJhbGciOi...
+INFO:RefineryWorker:DEBUG: VIKUNJA_BASE_URL: http://localhost:3456/api/v1
+INFO:RefineryWorker:🏗️ Refinery Worker: Connected to Temporal at localhost:7233
+INFO:RefineryWorker:🏗️ REFINERY WORKER STARTED (Polling refinery-queue)

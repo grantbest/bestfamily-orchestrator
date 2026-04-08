@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] TEX Vs SEA - 4/7 | \ud83c\udf21\ufe0f 70\u00b0F | \ud83d\udca8 6mph",
+  "description": "Actionable Alert for 3rd Inning Pivot",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T00:44:36.660288+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 TEX Vs SEA - 4/7 | \ud83c\udf21\ufe0f 70\u00b0F | \ud83d\udca8 6mph | 3rd Inning Pivot",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The current game state features a scoreless inning with limited baserunners and a relatively weak bullpen. Historically, games with these characteristics have a win probability close to 50%. Given the slight advantage of the home team based on the implied bookmaker odds, there appears to be an **Edge** of approximately 2-3% in favor of the home team.\n\nThe combination of a neutral temperature, slight wind, and a non-night game suggests neutral field conditions, further supporting the near-50/50 win probability.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=TEX%20vs%20SEA%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "822918",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "2.95%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "822918"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "103",
+  "index": "103",
+  "updated_at": "2026-04-07T00:44:44.685031+00:00"
+}

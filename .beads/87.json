@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] MIN Vs DET - 4/7 | \ud83c\udf21\ufe0f 37\u00b0F | \ud83d\udca8 6mph",
+  "description": "Actionable Alert for Mid-Inning Pen Entry",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T00:01:58.763447+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 MIN Vs DET - 4/7 | \ud83c\udf21\ufe0f 37\u00b0F | \ud83d\udca8 6mph | Mid-Inning Pen Entry",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The current game state features a pen entry in the 2nd inning with a score differential of 0 and a baserunner on base. Historical data suggests an average total runs of 9.69 in similar situations. The bookmaker odds imply a 50/50 probability of a run being scored, while our model suggests a 58% probability. This Edge of 8% suggests that betting on the Over 0.5 Runs would be a profitable decision based on historical trends.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=MIN%20vs%20DET%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "823728",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-120",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "4.10%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "823728"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "87",
+  "index": "87",
+  "updated_at": "2026-04-07T00:02:09.281199+00:00"
+}

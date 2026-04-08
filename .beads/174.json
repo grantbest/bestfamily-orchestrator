@@ -1,0 +1,17 @@
+{
+  "title": "[STORY] CI/CD Pipeline Enhancement for ENABLE_VIKUNJA",
+  "description": "Enhance the existing CI/CD pipelines to include automated testing for all code changes involving the ENABLE_VIKUNJA feature flag. This includes designing meta-tests that validate feature flag integration and ensuring seamless integration into the current pipeline.",
+  "requesting_agent": "quarterback-breakdown",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T23:34:38.875571+00:00",
+  "stage": "VALIDATION",
+  "workflow_id": null,
+  "context": {},
+  "resolution": "Polecat GIT ERROR: Preparing worktree (new branch 'polecat/174')\nfatal: a branch named 'polecat/174' already exists\n",
+  "done": false,
+  "parent_id": "172",
+  "id": "174",
+  "index": "174",
+  "updated_at": "2026-04-07T23:35:33.652516+00:00",
+  "status": "failed"
+}

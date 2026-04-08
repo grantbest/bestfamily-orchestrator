@@ -1,0 +1,17 @@
+{
+  "title": "[STORY] Full SDLC Test Case Development",
+  "description": "Develop comprehensive test cases for the ENABLE_VIKUNJA feature flag covering all phases of the SDLC: design, doing, validation, and done phases. Ensure all test cases incorporate the necessary steps for validation through Refinery integration and record the results adequately.",
+  "requesting_agent": "quarterback-breakdown",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T23:34:38.883191+00:00",
+  "stage": "VALIDATION",
+  "workflow_id": null,
+  "context": {},
+  "resolution": "Polecat GIT ERROR: Preparing worktree (new branch 'polecat/177')\nfatal: a branch named 'polecat/177' already exists\n",
+  "done": false,
+  "parent_id": "172",
+  "id": "177",
+  "index": "177",
+  "updated_at": "2026-04-07T23:35:30.035875+00:00",
+  "status": "failed"
+}

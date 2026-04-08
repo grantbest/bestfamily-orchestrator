@@ -33,6 +33,7 @@ from src.workers.refinery_workflow import (
     data_integrity_audit_activity,
     playwright_e2e_audit_activity,
     pre_commit_audit_activity,
+    refine_and_merge_activity,
     cleanup_refinery_activity,
     broadcast_status_activity
 )
@@ -103,6 +104,7 @@ async def main():
             data_integrity_audit_activity,
             playwright_e2e_audit_activity,
             pre_commit_audit_activity,
+            refine_and_merge_activity,
             cleanup_refinery_activity,
             broadcast_status_activity,
             run_security_scans_activity

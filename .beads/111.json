@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] COL Vs HOU - 4/7 | \ud83c\udf21\ufe0f 65\u00b0F | \ud83d\udca8 12mph",
+  "description": "Actionable Alert for 3-Inning Drought",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T01:30:58.178520+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 COL Vs HOU - 4/7 | \ud83c\udf21\ufe0f 65\u00b0F | \ud83d\udca8 12mph | 3-Inning Drought",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The current 3-inning drought suggests an outlier low-scoring event compared to historical norms. The model implies a significantly higher probability of scoring in the upcoming inning compared to the bookmaker odds, suggesting potential Edge.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=COL%20vs%20HOU%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "824376",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "1.38%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "824376"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "111",
+  "index": "111",
+  "updated_at": "2026-04-07T01:31:05.410178+00:00"
+}

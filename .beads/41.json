@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] FINAL vs TEST V2",
+  "description": "Actionable Alert for Final Integration Test V2",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-05T23:47:40.055612+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 FINAL vs TEST V2 | Final Integration Test V2",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*Testing Gastown Native Alerting from Container V2*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://google.com)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "1002",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Test Bet",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "5.00%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "1002"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "41",
+  "index": "41",
+  "updated_at": "2026-04-05T23:47:49.218642+00:00"
+}

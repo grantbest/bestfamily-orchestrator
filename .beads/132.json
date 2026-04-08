@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] CLE Vs KC - 4/7 | \ud83c\udf21\ufe0f 33\u00b0F | \ud83d\udca8 10mph",
+  "description": "Actionable Alert for 3rd Inning Pivot",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T17:38:40.836268+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 CLE Vs KC - 4/7 | \ud83c\udf21\ufe0f 33\u00b0F | \ud83d\udca8 10mph | 3rd Inning Pivot",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The current situation features a scoreless inning with a new reliever entering the game. Historically, in innings with similar conditions, the average total runs scored is 9.7. Given the absence of runs and the relatively strong bullpen ranking, the implied bookmaker odds likely overestimate the probability of runs being scored. Therefore, there is potential for an Edge in betting on the No Runs outcome.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=CLE%20vs%20KC%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "824457",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "2.95%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "824457"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "132",
+  "index": "132",
+  "updated_at": "2026-04-07T17:38:47.568285+00:00"
+}

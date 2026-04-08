@@ -8,8 +8,13 @@ from temporalio.worker import Worker, UnsandboxedWorkflowRunner
 from src.workers.sre_workflow import SREHealingWorkflow
 
 # Activities
-from src.workers.sre_activities import sre_site_monitor_activity
-from src.workers.polecat_activities import polecat_developer_activity
+from src.workers.sre_activities import (
+    sre_site_monitor_activity,
+    sre_check_temporal_health_activity,
+    sre_log_audit_activity,
+    sre_check_vikunja_bugs_activity,
+    sre_remediate_issue_activity
+)
 
 async def main():
     logging.basicConfig(level=logging.INFO)
@@ -28,7 +33,13 @@ async def main():
         client,
         task_queue="sre-queue",
         workflows=[SREHealingWorkflow],
-        activities=[sre_site_monitor_activity, polecat_developer_activity],
+        activities=[
+            sre_site_monitor_activity, 
+            sre_check_temporal_health_activity,
+            sre_log_audit_activity,
+            sre_check_vikunja_bugs_activity,
+            sre_remediate_issue_activity
+        ],
         workflow_runner=UnsandboxedWorkflowRunner(),
         max_concurrent_activities=10 # Allow parallel tasks
     )

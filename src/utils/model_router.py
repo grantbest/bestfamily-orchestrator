@@ -21,11 +21,13 @@ class ModelRouter:
                    preferred_model: str = "auto",
                    json_mode: bool = True) -> Dict[str, Any]:
         """
-        Executes a chat request with automatic fallback logic and exponential backoff.
-        Priority: OpenAI (gpt-4o) -> Gemini (2.0-flash) -> Ollama (Local).
+        Executes a chat request with automatic fallback logic.
+        GASTOWN MANDATE: Prioritize local gemma4 for MacBook execution.
         """
-        model_priority = []
+        # PRIORITY 1: Local Gemma 4 (MacBook Power)
+        model_priority = [("ollama", "gemma4:latest")]
 
+        # Fallbacks (Optional)
         if preferred_model == "complex":
             if self.openai_key: model_priority.append(("openai", "gpt-4o"))
             if self.gemini_key: model_priority.append(("gemini", "gemini-2.0-flash"))
@@ -34,11 +36,11 @@ class ModelRouter:
             if self.gemini_key: model_priority.append(("gemini", "gemini-2.0-flash"))
         elif preferred_model == "claude":
             if self.anthropic_key: model_priority.append(("anthropic", "claude-3-5-sonnet-20241022"))
+        elif preferred_model == "ollama":
+            pass # Already at top
         else:
             if self.openai_key: model_priority.append(("openai", "gpt-4o"))
             if self.gemini_key: model_priority.append(("gemini", "gemini-2.0-flash"))
-
-        model_priority.append(("ollama", "llama3:latest"))
 
         for provider, model in model_priority:
             max_retries = 3
@@ -57,7 +59,6 @@ class ModelRouter:
                         return await self._call_ollama(prompt, system_prompt, model, json_mode)
                 except Exception as e:
                     error_str = str(e).lower()
-                    # If it's a 404 or something that won't change, we skip retries and move to next provider
                     if "404" in error_str or "not found" in error_str:
                         logging.warning(f"ModelRouter: {provider}/{model} not found: {e}. Moving to next provider.")
                         break

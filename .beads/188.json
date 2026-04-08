@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] NYY Vs ATH - 4/8 | \ud83c\udf21\ufe0f 43\u00b0F | \ud83d\udca8 16mph",
+  "description": "Actionable Alert for Post-Big-Inning Under",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-08T00:17:00.249118+00:00",
+  "stage": "DOING",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 NYY Vs ATH - 4/8 | \ud83c\udf21\ufe0f 43\u00b0F | \ud83d\udca8 16mph | Post-Big-Inning Under",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The post-big-inning under implies a 36% probability of under 10.5 runs in the game. However, historical data suggests an average of 9.69 runs in similar games. Given the currently scoreless inning and the relatively weak bullpen ranked 12th, the under appears undervalued, offering an Edge of approximately 7%.\n\nTherefore, the under appears statistically attractive based on the significant deviation from historical norms in the current game state.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=NYY%20vs%20ATH%204/8)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "823567",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "1.38%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "823567"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "188",
+  "index": "188",
+  "updated_at": "2026-04-08T00:17:00.254392+00:00"
+}

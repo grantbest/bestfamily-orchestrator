@@ -1,0 +1,16 @@
+{
+  "title": "Architecture: Environment & URL Alignment",
+  "description": "The portal shows 'development' and points 'production' to localhost. This is an architectural configuration failure. SRE/Architect must: 1. Update BettingApp/.env to APP_ENV=production. 2. Update config URLs to use bestfam.us instead of localhost. 3. Ensure UI changes are visible by forcing a fresh dev build. 4. Proof: Verify /api/config returns production URLs.",
+  "requesting_agent": "User-CLI",
+  "assigned_agent": null,
+  "created_at": "2026-04-05T13:11:17.075197+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {},
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "20",
+  "index": "20",
+  "updated_at": "2026-04-05T13:11:32.967954+00:00"
+}

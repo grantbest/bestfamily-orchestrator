@@ -1,11 +1,16 @@
 import asyncio
 import os
+import sys
 import logging
+
+# Ensure project root is in path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 from temporalio.client import Client
 from temporalio.worker import Worker, UnsandboxedWorkflowRunner
 
 # Activities
-from src.workers.polecat_activities import polecat_developer_activity
+from src.workers.polecat_activities import polecat_developer_activity, discord_alert_activity
 
 async def main():
     logging.basicConfig(level=logging.INFO)
@@ -24,7 +29,7 @@ async def main():
     worker = Worker(
         client,
         task_queue=target_queue,
-        activities=[polecat_developer_activity],
+        activities=[polecat_developer_activity, discord_alert_activity],
         workflow_runner=UnsandboxedWorkflowRunner(),
         max_concurrent_activities=10
     )

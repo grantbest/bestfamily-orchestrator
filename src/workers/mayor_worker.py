@@ -1,6 +1,11 @@
 import asyncio
 import os
+import sys
 import logging
+
+# Ensure project root is in path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 from temporalio.client import Client
 from temporalio.worker import Worker, UnsandboxedWorkflowRunner
 
@@ -15,7 +20,15 @@ from src.workers.mayor_workflow import (
     game_designer_activity,
     domain_experts_activity,
     quarterback_synthesis_activity,
-    breakdown_activity
+    design_refine_activity,
+    breakdown_activity,
+    get_task_title_activity,
+    get_bead_context_activity,
+    mark_breakdown_started_activity,
+    clear_breakdown_marker_activity,
+    move_task_activity,
+    post_comment_activity,
+    check_epic_completion_activity
 )
 
 async def main():
@@ -42,7 +55,15 @@ async def main():
             game_designer_activity,
             domain_experts_activity,
             quarterback_synthesis_activity,
-            breakdown_activity
+            design_refine_activity,
+            breakdown_activity,
+            get_task_title_activity,
+            get_bead_context_activity,
+            mark_breakdown_started_activity,
+            clear_breakdown_marker_activity,
+            move_task_activity,
+            post_comment_activity,
+            check_epic_completion_activity
         ],
         workflow_runner=UnsandboxedWorkflowRunner()
     )

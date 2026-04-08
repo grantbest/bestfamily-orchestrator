@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] TB Vs CHC - 4/7 | \ud83c\udf21\ufe0f 69\u00b0F | \ud83d\udca8 5mph",
+  "description": "Actionable Alert for 3rd Inning Pivot",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T23:17:32.590738+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 TB Vs CHC - 4/7 | \ud83c\udf21\ufe0f 69\u00b0F | \ud83d\udca8 5mph | 3rd Inning Pivot",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The presence of runners in scoring position coupled with the relatively low pitch count suggests potential for a scoring opportunity. Historically, games with similar situations have seen an average of 9 runs scored per game. Given the current score differential of 0 and the teams bullpen ranking of 15th, there is an Edge in the implied bookmaker odds.\n\n**Analytical Conclusion:** The combination of baserunners in scoring position, low pitch count, and historical run scoring trends suggests a potential value opportunity in the current game state.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=TB%20vs%20CHC%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "822999",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "2.95%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "822999"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "166",
+  "index": "166",
+  "updated_at": "2026-04-07T23:17:39.843764+00:00"
+}

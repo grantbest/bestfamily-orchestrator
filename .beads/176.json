@@ -1,0 +1,17 @@
+{
+  "title": "[STORY] AI-driven Workflow Automation for Refinery",
+  "description": "Develop an AI-driven workflow automation to manage inputs and outputs in Refinery efficiently. This includes integration with existing systems to automatically adjust based on predefined criteria and support the validation process.",
+  "requesting_agent": "quarterback-breakdown",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T23:34:38.881642+00:00",
+  "stage": "VALIDATION",
+  "workflow_id": null,
+  "context": {},
+  "resolution": "Polecat GIT ERROR: Preparing worktree (new branch 'polecat/176')\nfatal: a branch named 'polecat/176' already exists\n",
+  "done": false,
+  "parent_id": "172",
+  "id": "176",
+  "index": "176",
+  "updated_at": "2026-04-07T23:35:40.608347+00:00",
+  "status": "failed"
+}

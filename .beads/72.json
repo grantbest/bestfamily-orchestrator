@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] BOS Vs MIL - 4/6 | \ud83c\udf21\ufe0f 46\u00b0F | \ud83d\udca8 9mph",
+  "description": "Actionable Alert for 2nd Inning NRFI",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-06T23:12:50.144161+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 BOS Vs MIL - 4/6 | \ud83c\udf21\ufe0f 46\u00b0F | \ud83d\udca8 9mph | 2nd Inning NRFI",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*Given the early stage of the game and lack of runs scored, the provided game state suggests a lower-than-average run count compared to historical norms. The teams bullpen ranking and the scoreless streak further support this trend. Therefore, the current implied bookmaker odds likely overestimate the probability of a high-scoring outcome, creating an edge for the under.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=BOS%20vs%20MIL%204/6)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "824783",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-115",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "1.35%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "824783"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "72",
+  "index": "72",
+  "updated_at": "2026-04-06T23:12:57.459486+00:00"
+}

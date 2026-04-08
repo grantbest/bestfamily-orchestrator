@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] PIT Vs SD - 4/7 | \ud83c\udf21\ufe0f 52\u00b0F | \ud83d\udca8 12mph",
+  "description": "Actionable Alert for Pitch Count Fade",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T00:17:16.871119+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 PIT Vs SD - 4/7 | \ud83c\udf21\ufe0f 52\u00b0F | \ud83d\udca8 12mph | Pitch Count Fade",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The provided game state suggests an unusually low pitch count for the current inning. Historically, in games with similar pitch counts, the average total runs scored is 6.3. Given the current score differential of 0 and a lone baserunner on base, the implied total runs should be significantly lower than the historical average. The model probability suggests a value closer to 3 runs, while the implied bookmaker odds suggest around 4.5 runs. This Edge of 1.5 runs suggests that the bet is potentially undervalued.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=PIT%20vs%20SD%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "823401",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "0.85%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "823401"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "94",
+  "index": "94",
+  "updated_at": "2026-04-07T00:17:26.027545+00:00"
+}

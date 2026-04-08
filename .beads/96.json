@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] TEX Vs SEA - 4/7 | \ud83c\udf21\ufe0f 70\u00b0F | \ud83d\udca8 6mph",
+  "description": "Actionable Alert for 2nd Inning NRFI",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T00:26:52.273450+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 TEX Vs SEA - 4/7 | \ud83c\udf21\ufe0f 70\u00b0F | \ud83d\udca8 6mph | 2nd Inning NRFI",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The provided game state features a scoreless second inning with no baserunners and a relatively weak bullpen. Historically, similar situations have resulted in approximately a 54% chance of a win. The current bookmaker odds suggest a slightly lower probability. This Edge suggests the bet might be worth considering.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=TEX%20vs%20SEA%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "822918",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-115",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "1.35%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "822918"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "96",
+  "index": "96",
+  "updated_at": "2026-04-07T00:27:01.769337+00:00"
+}

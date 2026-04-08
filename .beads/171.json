@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] WSH Vs STL - 4/7 | \ud83c\udf21\ufe0f 51\u00b0F | \ud83d\udca8 14mph",
+  "description": "Actionable Alert for 3rd Inning Pivot",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T23:31:42.158138+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 WSH Vs STL - 4/7 | \ud83c\udf21\ufe0f 51\u00b0F | \ud83d\udca8 14mph | 3rd Inning Pivot",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The provided game state features a scoreless inning with low scoring potential, facing a poorly ranked bullpen. Historically, games with similar conditions have witnessed an average of 7.285 runs per game. Given the current score differential of 0, the implied probability of a run being scored is approximately 50%. However, our model suggests a 57% chance of a run being scored, indicating an Edge of 7%.\n\nTherefore, based on the combination of the game state and historical context, there appears to be significant value in betting on a run being scored in this situation.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=WSH%20vs%20STL%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "822754",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "2.95%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "822754"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "171",
+  "index": "171",
+  "updated_at": "2026-04-07T23:31:49.472061+00:00"
+}

@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] TB Vs CHC - 4/6 | \ud83c\udf21\ufe0f 72\u00b0F | \ud83d\udca8 5mph",
+  "description": "Actionable Alert for 3-Inning Drought",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-06T21:27:54.982239+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 TB Vs CHC - 4/6 | \ud83c\udf21\ufe0f 72\u00b0F | \ud83d\udca8 5mph | 3-Inning Drought",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The current game features a 3-inning drought with no runs scored and a pitching team ranked 15th in the bullpen. Historically, games with similar situations have seen an average of 9.11 runs scored per game. Given the current score differential of 0 and the lack of runs in the previous inning, the implied bookmaker odds may overestimate the probability of a run being scored in the upcoming inning.\n\nTherefore, the Edge in this situation suggests that the actual probability of a run being scored is likely lower than the bookmaker odds, presenting an opportunity for a profitable bet.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=TB%20vs%20CHC%204/6)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "823002",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "1.38%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "823002"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "55",
+  "index": "55",
+  "updated_at": "2026-04-06T21:28:03.091667+00:00"
+}

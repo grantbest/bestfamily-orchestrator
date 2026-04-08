@@ -1,0 +1,16 @@
+{
+  "title": "Architect: Refinery CI/CD Overhaul & TDD Enforcer",
+  "description": "Redesign the RefineryWorkflow to enforce: 1. Playwright E2E tests as a mandatory merge gate. 2. Data integrity checks (API must not return []). 3. Automated DB seeding during implementation. 4. Fix current UI invisibility and data gaps on bestfam.us.",
+  "requesting_agent": "User-CLI",
+  "assigned_agent": null,
+  "created_at": "2026-04-05T14:00:16.490708+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {},
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "24",
+  "index": "24",
+  "updated_at": "2026-04-05T14:00:32.144294+00:00"
+}

@@ -91,12 +91,17 @@ def read_bead(bead_id: str) -> Dict[str, Any]:
     with httpx.Client() as client:
         resp = client.get(url, headers=get_headers())
         if resp.status_code == 404:
-            # Try searching by index
+            # SRE: Fallback search by index
             idx_url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/tasks?filter=index%20%3D%20{bead_id}"
             resp = client.get(idx_url, headers=get_headers())
-            task = resp.json()[0]
+            results = resp.json()
+            if not isinstance(results, list) or not results:
+                return None
+            task = results[0]
         else:
+            resp.raise_for_status()
             task = resp.json()
+        
         return _map_task_to_bead(task)
 
 def update_bead(bead_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
@@ -113,6 +118,9 @@ def update_bead(bead_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
 
     # VIKUNJA MODE
     current = read_bead(bead_id)
+    if not current:
+        raise ValueError(f"Task {bead_id} not found.")
+
     stage = updates.get("stage", current.get("stage", "PENDING")).upper()
     
     metadata = {
@@ -131,9 +139,6 @@ def update_bead(bead_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
     # 1=To-Do, 4=Design, 2=Doing, 5=Validation, 3=Done
     bucket_map = {"PENDING": 1, "DESIGN": 4, "DOING": 2, "VALIDATION": 5, "DONE": 3}
     
-    # SRE Debug
-    logger.info(f"DEBUG: update_bead Task {bead_id} Stage: {stage} -> Bucket: {bucket_map.get(stage)}")
-    
     with httpx.Client() as client:
         # 1. Update task title/desc
         resp = client.post(f"{VIKUNJA_BASE_URL}/tasks/{bead_id}", headers=get_headers(), json=payload)
@@ -142,17 +147,8 @@ def update_bead(bead_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
         # 2. Move to bucket if stage mapped
         if stage in bucket_map:
             bid = bucket_map[stage]
-            # SRE: In Vikunja, bucket moves are often managed via the view-bucket-task relationship
-            # We assume project 1 and view 4 (Kanban) based on our setup
             move_url = f"{VIKUNJA_BASE_URL}/projects/{VIKUNJA_PROJECT_ID}/views/4/buckets/{bid}/tasks"
-            try:
-                m_resp = client.post(move_url, headers=get_headers(), json={"task_id": int(bead_id)})
-                if m_resp.status_code != 200:
-                    logger.error(f"SRE ERROR: Failed to move task {bead_id} to bucket {bid}. Status: {m_resp.status_code}, Body: {m_resp.text}")
-                else:
-                    logger.info(f"SRE SUCCESS: Moved task {bead_id} to bucket {bid}")
-            except Exception as e:
-                logger.error(f"SRE EXCEPTION moving task {bead_id}: {e}")
+            client.post(move_url, headers=get_headers(), json={"task_id": int(bead_id)})
             
         return read_bead(bead_id)
 
@@ -184,17 +180,20 @@ def list_beads(status: str = None) -> List[Dict[str, Any]]:
         return [_map_task_to_bead(t) for t in tasks]
 
 def _map_task_to_bead(task: Dict[str, Any]) -> Dict[str, Any]:
+    if not task or not isinstance(task, dict): return {}
     desc = task.get("description", "")
     parts = desc.split("--- AGENT METADATA ---")
+    raw_desc = parts[0].strip() if len(parts) > 0 else ""
     metadata = {}
     if len(parts) > 1:
         try: metadata = json.loads(parts[1].strip())
         except: pass
     
     return {
-        "id": str(task['id']), 
-        "index": str(task['index']), 
-        "title": task['title'],
+        "id": str(task.get('id', '')), 
+        "index": str(task.get('index', '')), 
+        "title": task.get('title', 'No Title'),
+        "description": raw_desc,
         "stage": metadata.get("stage", "PENDING").upper(),
         "context": metadata.get("context", {}),
         "resolution": metadata.get("resolution"),

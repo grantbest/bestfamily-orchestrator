@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] LAA Vs ATL - 4/8 | \ud83c\udf21\ufe0f 72\u00b0F | \ud83d\udca8 9mph",
+  "description": "Actionable Alert for 3rd Inning Pivot",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-08T02:18:07.397119+00:00",
+  "stage": "DOING",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 LAA Vs ATL - 4/8 | \ud83c\udf21\ufe0f 72\u00b0F | \ud83d\udca8 9mph | 3rd Inning Pivot",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The provided game state features a scoreless inning with limited scoring opportunities, facing a low-ranked bullpen. Historically, games with similar conditions have seen an average of 8.816 runs scored. The current games total runs probability is likely skewed low due to the limited scoring environment. Given the discrepancy between the implied bookmaker odds and the model probability, there appears to be an Edge opportunity.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=LAA%20vs%20ATL%204/8)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "824051",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "2.95%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "824051"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "209",
+  "index": "209",
+  "updated_at": "2026-04-08T02:18:07.402233+00:00"
+}

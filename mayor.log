@@ -1,0 +1,6 @@
+INFO:MayorWorker:🏛️ Mayor Worker: Connected to Temporal at localhost:7233
+INFO:MayorWorker:🏛️ MAYOR WORKER STARTED (Polling main-orchestrator-queue)
+INFO:src.workers.mayor_workflow:[178] Mayor Doing: title='[ALERT] TOR Vs LAD - 4/7 | 🌡️ 68°F | 💨 5mph'
+INFO:src.workers.mayor_workflow:[179] Mayor Doing: title='[ALERT] TOR Vs LAD - 4/7 | 🌡️ 68°F | 💨 5mph'
+INFO:src.workers.mayor_workflow:[180] Mayor Doing: title='[ALERT] TOR Vs LAD - 4/7 | 🌡️ 68°F | 💨 5mph'
+INFO:src.workers.mayor_workflow:[181] Mayor Doing: title='[ALERT] NYY Vs ATH - 4/7 | 🌡️ 43°F | 💨 16mph'

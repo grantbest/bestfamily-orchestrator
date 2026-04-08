@@ -1,0 +1,10 @@
+INFO:PolecatWorker:🐾 Polecat Worker: Connected to Temporal at localhost:7233
+INFO:PolecatWorker:🐾 POLECAT WORKER STARTED (Polling betting-app-queue)
+INFO:httpx:HTTP Request: POST https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa "HTTP/1.1 204 No Content"
+INFO:src.workers.polecat_activities:✅ Gastown Alert Sent for Game 822831
+INFO:httpx:HTTP Request: POST https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa "HTTP/1.1 204 No Content"
+INFO:src.workers.polecat_activities:✅ Gastown Alert Sent for Game 822831
+INFO:httpx:HTTP Request: POST https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa "HTTP/1.1 204 No Content"
+INFO:src.workers.polecat_activities:✅ Gastown Alert Sent for Game 822831
+INFO:httpx:HTTP Request: POST https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa "HTTP/1.1 204 No Content"
+INFO:src.workers.polecat_activities:✅ Gastown Alert Sent for Game 823567

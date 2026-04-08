@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] MIN Vs DET - 4/7 | \ud83c\udf21\ufe0f 37\u00b0F | \ud83d\udca8 6mph",
+  "description": "Actionable Alert for Pitch Count Fade",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-07T01:09:35.740430+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 MIN Vs DET - 4/7 | \ud83c\udf21\ufe0f 37\u00b0F | \ud83d\udca8 6mph | Pitch Count Fade",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*The current pitch count suggests an elevated risk of the reliever blowing the save. Historically, pitchers with a pitch count exceeding 90 in the 5th inning have a win probability of approximately 56.58%. Given the current score differential of 0 and the presence of two baserunners, the bookmakers implied win probability is likely underestimating the true probability.\n\nTherefore, the Edge in this situation suggests a potential value in betting on the home team to win.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=MIN%20vs%20DET%204/7)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "823728",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "0.85%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "823728"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "108",
+  "index": "108",
+  "updated_at": "2026-04-07T01:09:43.330165+00:00"
+}

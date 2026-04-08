@@ -1,0 +1,56 @@
+{
+  "title": "[ALERT] DET Vs STL - 4/5 | \ud83c\udf21\ufe0f 44\u00b0F | \ud83d\udca8 15mph",
+  "description": "Actionable Alert for First 2 Batters Reach",
+  "requesting_agent": "MLB-Engine",
+  "assigned_agent": null,
+  "created_at": "2026-04-05T23:56:12.335985+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {
+    "alert_data": {
+      "webhook_url": "https://discord.com/api/webhooks/1481449723704643636/URsD31IJFmpRiPJ30v5G1urxw-YKKUKZIHem5RsXG8ewf_vAeooeYhKpNLw5JvidlDXa",
+      "payload": {
+        "embeds": [
+          {
+            "title": "\ud83d\udcc8 DET Vs STL - 4/5 | \ud83c\udf21\ufe0f 44\u00b0F | \ud83d\udca8 15mph | First 2 Batters Reach",
+            "description": "A high-probability betting opportunity has been identified.\n\n\ud83e\udd16 **AI Analyst Insight:**\n*Given the current live game state with two baserunners and a poor bullpen ranking, the historical context suggests an elevated run expectation. The average total runs in similar games is 9.69. The bookmakers odds likely underprice the potential for additional runs in this situation. Therefore, there is an edge in favor of the bet.*\n\n\ud83d\ude80 **[ONE-TAP BET: OPEN SLIP](https://sportsbook.draftkings.com/search?q=DET%20vs%20STL%204/5)**",
+            "color": 3447003,
+            "fields": [
+              {
+                "name": "Game ID",
+                "value": "824296",
+                "inline": true
+              },
+              {
+                "name": "Bet",
+                "value": "Quant Strategy Trigger",
+                "inline": true
+              },
+              {
+                "name": "Odds",
+                "value": "-110",
+                "inline": true
+              },
+              {
+                "name": "Stake",
+                "value": "1.38%",
+                "inline": true
+              }
+            ],
+            "footer": {
+              "text": "GASTOWN NATIVE ALERTING | Please Bet Responsibly"
+            }
+          }
+        ]
+      },
+      "game_id": "824296"
+    },
+    "type": "DISCORD_ALERT"
+  },
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "42",
+  "index": "42",
+  "updated_at": "2026-04-05T23:56:21.726223+00:00"
+}

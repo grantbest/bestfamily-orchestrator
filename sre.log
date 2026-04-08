@@ -1,0 +1,2 @@
+INFO:SREWorker:🛡️ SRE Worker: Connected to Temporal at localhost:7233
+INFO:SREWorker:🛡️ SRE WORKER STARTED (Polling sre-queue)

@@ -1,0 +1,16 @@
+{
+  "title": "SRE: 502 Bad Gateway Incident Response",
+  "description": "The portal intermittently returns 502 Bad Gateway. SRE Agent must: 1. Hard kill all lingering 'next' and 'node' processes on port 3000. 2. Remove any stale .next/dev/lock files. 3. Verify stability by polling /api/config for 30 seconds after relaunch. 4. Proof: Verify 200 OK from local curl and external bestfam.us.",
+  "requesting_agent": "User-CLI",
+  "assigned_agent": null,
+  "created_at": "2026-04-05T13:30:42.225294+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {},
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "22",
+  "index": "22",
+  "updated_at": "2026-04-05T13:30:56.070269+00:00"
+}

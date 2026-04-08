@@ -1,0 +1,16 @@
+{
+  "title": "SRE: Portal Data Visibility Restoration",
+  "description": "Verified isolated MLB schema on cloud DB and updated frontend API routes. Re-running synthetic health audit to confirm 200 OK across all endpoints (bets, teams, config).",
+  "requesting_agent": "User-CLI",
+  "assigned_agent": null,
+  "created_at": "2026-04-05T03:57:27.099396+00:00",
+  "stage": "DONE",
+  "workflow_id": null,
+  "context": {},
+  "resolution": null,
+  "done": false,
+  "parent_id": null,
+  "id": "11",
+  "index": "11",
+  "updated_at": "2026-04-05T03:57:40.848155+00:00"
+}
