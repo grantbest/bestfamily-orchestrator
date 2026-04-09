@@ -40,24 +40,21 @@ def check_imports():
     return not failed
 
 def check_env():
-    """Check if critical environment variables are set."""
-    required_vars = ["VIKUNJA_API_TOKEN", "TEMPORAL_ADDRESS"]
-    # Model keys are optional as we have fallback to Ollama
+    """Check if critical infrastructure is ready."""
+    import httpx
     
-    # Try loading env first via beads_manager
+    # SRE: Check Sidecar Gateway
     try:
-        from beads_manager import VIKUNJA_API_TOKEN as token
-        if token: logger.info("✅ VIKUNJA_API_TOKEN is loaded.")
-        else: logger.warning("⚠️ VIKUNJA_API_TOKEN is empty.")
+        resp = httpx.get("http://localhost:8001/health", timeout=5.0)
+        if resp.status_code == 200:
+            logger.info("✅ Sidecar Gateway is healthy.")
+            return True
+        else:
+            logger.error(f"❌ Sidecar Gateway returned {resp.status_code}.")
     except Exception as e:
-        logger.error(f"❌ Failed to check VIKUNJA_API_TOKEN: {e}")
-
-    failed = False
-    for var in required_vars:
-        if not os.getenv(var) and var != "VIKUNJA_API_TOKEN": # Already checked via beads_manager
-             logger.warning(f"⚠️ Environment variable {var} is not set. Using defaults.")
+        logger.error(f"❌ Sidecar Gateway unreachable: {e}")
              
-    return not failed
+    return False
 
 if __name__ == "__main__":
     logger.info("🧪 STARTING AGENT PRE-FLIGHT CHECK...")

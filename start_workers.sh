@@ -4,7 +4,7 @@
 # Secrets are loaded via EnvLoader.py or OS environment
 export TEMPORAL_ADDRESS=localhost:7233
 export NATS_URL=nats://nats.bestfam.us:4222
-export VIKUNJA_API_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzU2NTMxODIsImlkIjoxLCJqdGkiOiIzYmU1MzNmNy0zYzczLTQ4YTgtOTdhOS02MzE4N2UxZDhlZmMiLCJzaWQiOiIxZDA5NTk4Yy1jMTQzLTRjNjEtOTM0OS0wYTc5MDk4ZWQ1YzgiLCJ0eXBlIjoxLCJ1c2VybmFtZSI6ImFkbWluIn0.u2-Tps-FxhdhS1CnfhoVKDNdXDdR3HcoC_h7wCTISD0
+export VIKUNJA_API_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzU2NTU3MjgsImlkIjoxLCJqdGkiOiI4ODFmNDRmZC01NWI1LTQwOWEtOWI3Zi1kNWZiMThkOWUzODciLCJzaWQiOiI0ZTBlNTkyZS0zY2VlLTQ1MWMtYTVkYy1kZTc1ZmFmYWRjMDIiLCJ0eXBlIjoxLCJ1c2VybmFtZSI6ImFkbWluIn0.KyLvYwB5PeOwssJV6ok1Gg9rW7lvoLx_3fe7zZ0ueUc
 export VIKUNJA_BASE_URL=http://localhost:3456/api/v1
 export VIKUNJA_PROJECT_ID=1
 export ENABLE_VIKUNJA=true
@@ -30,10 +30,30 @@ pkill -9 -f "_worker_standalone.py" || true
 pkill -9 -f "nats_continuity.py" || true
 pkill -9 -f "unified_orchestrator.py" || true
 pkill -9 -f "webhook_listener.py" || true
+pkill -9 -f "sidecar.py" || true
 sleep 1
 
-echo "🚀 Starting Unified Gastown Orchestrator..."
-nohup "$VENV_PYTHON" "$BASE_DIR/src/workers/unified_orchestrator.py" > "$BASE_DIR/unified.log" 2>&1 &
+echo "🚀 Starting Gastown Resiliency Sidecar (IDP/Proxy)..."
+nohup "$VENV_PYTHON" "$BASE_DIR/src/utils/sidecar.py" > "$BASE_DIR/sidecar.log" 2>&1 &
+sleep 2 # Wait for sidecar to bind
+
+# --- SRE: INFRASTRUCTURE REFINERY GATE ---
+echo "🧪 Running Infrastructure Pre-Flight Check..."
+if ! "$VENV_PYTHON" "$BASE_DIR/scripts/pre_flight_check.py"; then
+    echo "❌ PRE-FLIGHT CHECK FAILED. Infrastructure is unstable. Check logs."
+    pkill -9 -f "sidecar.py"
+    exit 1
+fi
+echo "✅ Infrastructure Linted."
+
+echo "🚀 Starting Gastown Orchestrator (Design/Breakdown) in 'default'..."
+nohup "$VENV_PYTHON" "$BASE_DIR/src/workers/unified_orchestrator.py" --worker-type orchestrator --namespace default > "$BASE_DIR/orchestrator.log" 2>&1 &
+
+echo "🚀 Starting Polecat Developer (Implementation Loop) in 'betting-app'..."
+nohup "$VENV_PYTHON" "$BASE_DIR/src/workers/unified_orchestrator.py" --worker-type developer --namespace betting-app > "$BASE_DIR/developer.log" 2>&1 &
+
+echo "🚀 Starting Homelab Worker (Infrastructure/Refinery) in 'homelab'..."
+nohup "$VENV_PYTHON" "$BASE_DIR/src/workers/unified_orchestrator.py" --worker-type homelab --namespace homelab > "$BASE_DIR/homelab_worker.log" 2>&1 &
 
 echo "🚀 Starting Vikunja Webhook Listener (Dispatcher)..."
 nohup "$VENV_PYTHON" "/Users/grantbest/Documents/Active/Homelab/scripts/webhook_listener.py" > "/Users/grantbest/Documents/Active/Homelab/webhook.log" 2>&1 &

@@ -37,15 +37,28 @@ class BreakdownWorkflow:
             return f"Breakdown complete (no story IDs): {breakdown_result}"
 
         # 3. Fan-out: Start Child Workflows
+        from src.utils.namespace_manager import NamespaceManager
         story_handles = []
         for story_id in story_ids:
-            logger.info(f"Breakdown[{bead_id}]: Starting ImplementationWorkflow for story {story_id}")
+            # SRE: Determine the correct namespace for this story
+            # In a breakdown, the child story might belong to a different namespace
+            # We fetch the story title to triage it correctly
+            story_bead = await workflow.execute_activity(
+                get_task_title_activity, story_id,
+                start_to_close_timeout=timedelta(seconds=30), retry_policy=retry)
+            
+            target_ns = NamespaceManager.get_namespace_for_task(title=story_bead)
+            target_queue = NamespaceManager.get_queue_for_namespace(target_ns)
+            
+            logger.info(f"Breakdown[{bead_id}]: Starting ImplementationWorkflow for story {story_id} in namespace {target_ns}")
+            
             # Each story gets an ImplementationWorkflow
             handle = await workflow.start_child_workflow(
                 "ImplementationWorkflow",
                 str(story_id),
                 id=f"implementation-task-{story_id}-doing",
-                task_queue="modular-orchestrator-queue"
+                namespace=target_ns, # TARGET THE DEDICATED NAMESPACE
+                task_queue=target_queue
             )
             story_handles.append(handle)
             

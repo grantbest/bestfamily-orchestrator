@@ -65,6 +65,34 @@ def _is_story(title: str) -> bool:
 
 
 @activity.defn
+async def system_integrity_check_activity(bead_id: str) -> str:
+    """SRE: Internal Linting. Validates that the worker has paths, auth, and sidecar access."""
+    import sys
+    import os
+    import httpx
+    
+    checks = []
+    
+    # 1. Path Check
+    if any("/BestFam-Orchestrator" in p for p in sys.path):
+        checks.append("✅ sys.path aligned")
+    else:
+        return "FAILED: Project root missing from sys.path"
+        
+    # 2. Sidecar Check
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get("http://localhost:8001/health")
+            if resp.status_code == 200:
+                checks.append("✅ sidecar gateway reachable")
+            else:
+                return f"FAILED: sidecar returned {resp.status_code}"
+    except Exception as e:
+        return f"FAILED: sidecar unreachable ({str(e)})"
+        
+    return "INTEGRITY_PASSED: " + " | ".join(checks)
+
+@activity.defn
 async def triage_task_queue(bead_id: str) -> str:
     """Uses LLM to determine the implementer queue."""
     from beads_manager import read_bead

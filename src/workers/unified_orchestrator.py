@@ -2,58 +2,33 @@ import asyncio
 import os
 import logging
 import signal
+import sys
+
+# Ensure project root is in path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 from temporalio.client import Client
 from temporalio.worker import Worker, UnsandboxedWorkflowRunner
 from temporalio import activity
 
-from src.workers.pipeline_workflow import MasterPipelineWorkflow
-from src.workers.mayor_workflow import MayorWorkflow
-from src.workers.refinery_workflow import RefineryWorkflow
+# Workflow Imports
+from src.workers.pipeline_workflow import *
+from src.workers.mayor_workflow import *
 from src.workers.design_workflow import DesignWorkflow
 from src.workers.breakdown_workflow import BreakdownWorkflow
 from src.workers.implementation_workflow import ImplementationWorkflow
-
-from src.workers.pipeline_workflow import (
-    discovery_activity, check_changes_activity, build_activity, test_activity,
-    secure_activity, deploy_activity, create_sre_bug_activity
-)
-
-from src.workers.mayor_workflow import (
-    triage_task_queue, ba_design_activity, architect_design_activity,
-    game_designer_activity, domain_experts_activity, quarterback_synthesis_activity,
-    design_refine_activity,
-    breakdown_activity, mark_breakdown_started_activity, get_task_title_activity,
-    get_bead_context_activity,
-    clear_breakdown_marker_activity,
-    move_task_activity, post_comment_activity,
-    check_epic_completion_activity
-)
-
-from src.workers.refinery_workflow import (
-    data_integrity_audit_activity,
-    playwright_e2e_audit_activity,
-    pre_commit_audit_activity,
-    refine_and_merge_activity,
-    cleanup_refinery_activity,
-    broadcast_status_activity
-)
-
+from src.workers.refinery_workflow import *
 from src.workers.nexus_security import (
     SecurityAuditServiceHandler, SecurityAuditWorkflow, 
     run_security_scans_activity
 )
-
 from src.workers.polecat_activities import polecat_developer_activity
-
-import beads_manager
+import scripts.beads_manager as beads_manager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("UnifiedOrchestrator")
 
-# --- Bug 1: Supervisor/Daemon Pattern ---
-
 async def run_worker_with_restart(name, worker_coro):
-    """Supervises a worker and restarts it on failure."""
     while True:
         try:
             logger.info(f"🚀 Starting {name}...")
@@ -63,84 +38,79 @@ async def run_worker_with_restart(name, worker_coro):
             await asyncio.sleep(5)
 
 async def main():
-    from src.utils.env_loader import EnvLoader
-    EnvLoader.load(os.getcwd())
-    
-    print(f"📦 BEADS_MANAGER VERSION: {beads_manager.VERSION}")
-    
-    temporal_address = os.getenv("TEMPORAL_ADDRESS", "localhost:7233")
-    temporal_namespace = os.getenv("TEMPORAL_NAMESPACE", "default")
-    
-    # Bug 8: Connection resilience
-    max_retries = 5
-    for i in range(max_retries):
-        try:
-            client = await Client.connect(temporal_address, namespace=temporal_namespace)
-            break
-        except Exception as e:
-            if i == max_retries - 1: raise
-            logger.warning(f"Failed to connect to Temporal at {temporal_address}: {e}. Retrying {i+1}/{max_retries}...")
-            await asyncio.sleep(2)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--worker-type", choices=["orchestrator", "developer", "homelab", "all"], default="all")
+    parser.add_argument("--namespace", default="default")
+    args = parser.parse_args()
 
-    orchestrator_worker = Worker(
+    temporal_address = os.getenv("TEMPORAL_ADDRESS", "localhost:7233")
+    temporal_namespace = args.namespace
+    
+    logger.info(f"🌐 GASTOWN WORKER: Type={args.worker_type} | Namespace={temporal_namespace}")
+    
+    client = await Client.connect(temporal_address, namespace=temporal_namespace)
+    workers = []
+
+    # All Capabilities
+    all_workflows = [
+        MayorWorkflow, MasterPipelineWorkflow, RefineryWorkflow,
+        DesignWorkflow, BreakdownWorkflow, ImplementationWorkflow,
+        SecurityAuditWorkflow
+    ]
+    
+    all_activities = [
+        system_integrity_check_activity,
+        discovery_activity, check_changes_activity, build_activity, test_activity,
+        secure_activity, deploy_activity, create_sre_bug_activity,
+        triage_task_queue, ba_design_activity, architect_design_activity,
+        game_designer_activity, domain_experts_activity, quarterback_synthesis_activity,
+        design_refine_activity,
+        breakdown_activity, mark_breakdown_started_activity, get_task_title_activity,
+        get_bead_context_activity,
+        clear_breakdown_marker_activity,
+        move_task_activity, post_comment_activity,
+        check_epic_completion_activity,
+        data_integrity_audit_activity,
+        playwright_e2e_audit_activity,
+        pre_commit_audit_activity,
+        refine_and_merge_activity,
+        cleanup_refinery_activity,
+        broadcast_status_activity,
+        run_security_scans_activity
+    ]
+
+    from src.utils.namespace_manager import NamespaceManager
+    target_queue = NamespaceManager.get_queue_for_namespace(temporal_namespace)
+
+    # Throttled Activity Logic
+    llm_lock = asyncio.Lock()
+    @activity.defn(name="polecat_developer_activity")
+    async def polecat_developer_activity_throttled(bead_id: str) -> str:
+        async with llm_lock:
+            return await polecat_developer_activity(bead_id)
+
+    # SRE: The Single Resilient Worker
+    # In each namespace, we start ONE worker that polls the namespace's primary queue.
+    # This worker handles BOTH workflows and activities.
+    worker = Worker(
         client,
-        task_queue="modular-orchestrator-queue",
-        workflows=[
-            MayorWorkflow, MasterPipelineWorkflow, RefineryWorkflow,
-            DesignWorkflow, BreakdownWorkflow, ImplementationWorkflow,
-            SecurityAuditWorkflow
-        ],
-        activities=[
-            discovery_activity, check_changes_activity, build_activity, test_activity,
-            secure_activity, deploy_activity, create_sre_bug_activity,
-            triage_task_queue, ba_design_activity, architect_design_activity,
-            game_designer_activity, domain_experts_activity, quarterback_synthesis_activity,
-            design_refine_activity,
-            breakdown_activity, mark_breakdown_started_activity, get_task_title_activity,
-            get_bead_context_activity,
-            clear_breakdown_marker_activity,
-            move_task_activity, post_comment_activity,
-            check_epic_completion_activity,
-            data_integrity_audit_activity,
-            playwright_e2e_audit_activity,
-            pre_commit_audit_activity,
-            refine_and_merge_activity,
-            cleanup_refinery_activity,
-            broadcast_status_activity,
-            run_security_scans_activity
-        ],
+        task_queue=target_queue,
+        workflows=all_workflows,
+        activities=all_activities + [polecat_developer_activity_throttled],
         nexus_service_handlers=[SecurityAuditServiceHandler()],
         workflow_runner=UnsandboxedWorkflowRunner()
     )
+    workers.append(run_worker_with_restart(f"Worker-{temporal_namespace}", worker.run))
 
-    developer_worker = Worker(client, task_queue="betting-app-queue", activities=[polecat_developer_activity])
-    homelab_worker = Worker(client, task_queue="homelab-queue", activities=[polecat_developer_activity])
-
-    logger.info("🤖 UNIFIED BESTFAM ORCHESTRATOR STARTED WITH SUPERVISOR")
-
-    # Handle graceful shutdown
     stop_event = asyncio.Event()
     loop = asyncio.get_event_loop()
-    for sig in (signal.SIGINT, signal.SIGTERM):
-        loop.add_signal_handler(sig, lambda: stop_event.set())
-
-    # Supervise workers
-    workers = [
-        run_worker_with_restart("OrchestratorWorker", orchestrator_worker.run),
-        run_worker_with_restart("DeveloperWorker", developer_worker.run),
-        run_worker_with_restart("HomelabWorker", homelab_worker.run),
-    ]
-
-    worker_task = asyncio.gather(*workers)
-    
-    # Wait for stop event
-    await stop_event.wait()
-    logger.info("🛑 Shutting down orchestrator...")
-    worker_task.cancel()
     try:
-        await worker_task
-    except asyncio.CancelledError:
-        pass
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            loop.add_signal_handler(sig, stop_event.set)
+    except: pass
+
+    await asyncio.gather(*workers)
 
 if __name__ == "__main__":
     try:

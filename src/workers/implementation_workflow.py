@@ -7,6 +7,7 @@ from temporalio.common import RetryPolicy
 
 # Activities
 from src.workers.mayor_workflow import (
+    system_integrity_check_activity,
     triage_task_queue,
     move_task_activity
 )
@@ -19,6 +20,14 @@ class ImplementationWorkflow:
         retry = RetryPolicy(initial_interval=timedelta(seconds=2), maximum_attempts=3)
         fast_retry = RetryPolicy(maximum_attempts=1)
         
+        # 0. GASTOWN INFRA REFINERY GATE
+        integrity = await workflow.execute_activity(
+            system_integrity_check_activity, bead_id,
+            start_to_close_timeout=timedelta(seconds=30), retry_policy=fast_retry)
+        
+        if integrity.startswith("FAILED"):
+            raise Exception(f"INFRASTRUCTURE FAILURE: {integrity}")
+
         # 1. Triage
         target_queue = await workflow.execute_activity(
             triage_task_queue, bead_id,
@@ -29,7 +38,7 @@ class ImplementationWorkflow:
         # 2. Implement
         dev_result = await workflow.execute_activity(
             polecat_developer_activity, bead_id,
-            start_to_close_timeout=timedelta(minutes=30),
+            start_to_close_timeout=timedelta(minutes=60),
             task_queue=target_queue, retry_policy=dev_retry)
 
         if isinstance(dev_result, str) and ("ERROR" in dev_result.upper() or "EXCEPTION" in dev_result.upper() or "FAILED" in dev_result.upper()):
